@@ -37,7 +37,7 @@ export class AuthComponent {
 
   constructor(
     private route: ActivatedRoute,
-    private entity: EntityService,
+    // private entity: EntityService,
     public formBuilder: FormBuilder,
     private router: Router
   ) {
@@ -58,12 +58,12 @@ export class AuthComponent {
     //       this.showProgress = false;
     //     }),
     //   );
-    this.entity
-      .callAPI$(webMethod.getUserInfo, this.loginForm?.value.user)
-      .subscribe((_useInfo) => {
-        localStorage.setItem('currentUser', _useInfo);
-        this.showProgress = false;
-        this.router.navigateByUrl('newpo', { replaceUrl: true });
-      });
+    // this.entity
+    //   .callAPI$(webMethod.getUserInfo, this.loginForm?.value.user)
+    //   .subscribe((_useInfo) => {
+    //     localStorage.setItem('currentUser', _useInfo);
+    //     this.showProgress = false;
+    //     this.router.navigateByUrl('newpo', { replaceUrl: true });
+    //   });
   }
 }

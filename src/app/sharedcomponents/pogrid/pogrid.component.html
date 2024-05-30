@@ -29,18 +29,21 @@
         <td *ngFor="let col of columns" [pEditableColumn]="rowData[col.field]">
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <!-- <ng-container *ngIf="col.field === 'country'">
-                    <p-dropdown
-                      [options]="country"
-                      optionLabel="country"
-                      formControlName="selectedCountry"
-                      placeholder="Select Country"
-                      [showClear]="true"
-                      [checkmark]="true"
-                      [editable]="true"
-                    ></p-dropdown>
-                  </ng-container> -->
-              <input pInputText type="text" formControlName="col.field" />
+              <ng-container *ngIf="col.field === 'Department'; else inputField">
+                <p-dropdown
+                  [options]="onlyDepartment"
+                  optionLabel="description"
+                  placeholder="Select a Department"
+                  autoWidth="false"
+                  [style]="{ width: '200px' }"
+                  editable="true"
+                  [showClear]="true"
+                ></p-dropdown>
+              </ng-container>
+
+              <ng-template #inputField>
+                <input pInputText type="text" formControlName="col.field" />
+              </ng-template>
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData[col.field] }}
