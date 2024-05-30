@@ -1,1 +1,30 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* @import '../node_modules/primeng//resources/primeng.min.css';
+@import '../node_modules/primeng/resources/themes/bootstrap4-light-blue/theme.css'; */
+@import "primeicons/primeicons.css";
+@import "primeng/resources/themes/saga-blue/theme.css";
+@import "primeng/resources/primeng.min.css";
+
+/* :root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 2rem;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--surface-500);
+}
+
+h1 {
+  margin-top: 0;
+} */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

@@ -1,0 +1,110 @@
+<div class="wrapper">
+  <form [formGroup]="formGroup">
+    <p-card>
+      <div class="row firstrow">
+        <div class="field">
+          <label>Expense Type</label>
+          <p-dropdown
+            [options]="ExpenseType"
+            formControlName="expenseType"
+            optionLabel="value"
+            [showClear]="true"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          ></p-dropdown>
+        </div>
+
+        <div class="field">
+          <label for="email">Start Date</label>
+          <input
+            type="date"
+            pInputText
+            formControlName="startDate"
+            name="email"
+            placeholder="Enter your email"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          />
+        </div>
+
+        <div class="field">
+          <label>Select Vendor</label>
+          <p-dropdown
+            [options]="Vendors"
+            formControlName="selectVendor"
+            placeholder="Select your Vendor"
+            optionLabel="value"
+            [showClear]="true"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          ></p-dropdown>
+        </div>
+      </div>
+
+      <div class="row secondrow">
+        <div class="field">
+          <label for="purpose">Purpose</label>
+          <textarea
+            rows="1"
+            pInputTextarea
+            formControlName="purpose"
+            name="purpose"
+            placeholder="Enter Your Purpose"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label>Manager Email</label>
+          <p-dropdown
+            [options]="Managers"
+            formControlName="managerEmail"
+            optionLabel="value"
+            [showClear]="true"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          ></p-dropdown>
+        </div>
+
+        <div class="field">
+          <label for="emailCC">Email CC</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="emailCC"
+            name="emailCC"
+            placeholder="Email"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          />
+        </div>
+      </div>
+    </p-card>
+  </form>
+  <div class="button-wrapper">
+    <button pButton pRipple label="Attachments"></button>
+    <button pButton pRipple label="Upload PO Lines"></button>
+    <button pButton pRipple label="A Copy From Existing PO"></button>
+    <button
+      pButton
+      pRipple
+      label="Add New PO Line"
+      icon="pi pi-plus"
+      (click)="showDialog()"
+    ></button>
+  </div>
+  <app-pogrid [gridData]="gridData"></app-pogrid>
+  <!-- <app-pogrid
+    [gridData]="[{
+      Department: 'Dept',
+      Account: 'Acc',
+      VendorPart: 'Vend',
+      Item: 'Ite',
+      delDate: 'date',
+      quantity: 'quan',
+      unitprice: 'unit',
+      totalprice: 'total',
+    }]"
+  ></app-pogrid> -->
+</div>

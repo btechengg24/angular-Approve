@@ -1,0 +1,120 @@
+<div class="wrapper">
+  <form [formGroup]="formGroup">
+    <p-card>
+      <div class="row">
+        <div class="field">
+          <label>Department</label>
+          <p-dropdown
+            [options]="Department"
+            optionLabel="value"
+            formControlName="Department"
+            [showClear]="true"
+            autoWidth="false"
+            label
+          >
+          </p-dropdown>
+        </div>
+        <div class="field">
+          <label>Account</label>
+          <p-dropdown
+            [options]="Account"
+            optionLabel="value"
+            formControlName="Account"
+            [showClear]="true"
+            autoWidth="false"
+          >
+          </p-dropdown>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Vendor Part No</label>
+          <p-dropdown
+            [options]="VendorPart"
+            optionLabel="value"
+            formControlName="VendorPart"
+            [showClear]="true"
+            autoWidth="false"
+          >
+          </p-dropdown>
+        </div>
+
+        <div class="field">
+          <label for="purpose">Item</label>
+          <textarea
+            rows="1"
+            pInputTextarea
+            formControlName="Item"
+            name="Item"
+            placeholder="Enter Item Name"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label for="email">Req. Del. Date</label>
+          <input
+            type="date"
+            pInputText
+            formControlName="delDate"
+            autoWidth="false"
+            [defaultValue]=""
+            [style]="{ width: '200px' }"
+          />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="quantity">quantity</label>
+          <input
+            type="number"
+            step="1"
+            pInputText
+            formControlName="quantity"
+            name="quantity"
+            autoWidth="false"
+            [defaultValue]="1"
+            [style]="{ width: '200px' }"
+          />
+        </div>
+
+        <div class="field">
+          <label for="emailCC">Unit Price</label>
+          <input
+            type="number"
+            step="0.01"
+            pInputText
+            formControlName="unitprice"
+            name="unitprice"
+            [defaultValue]="0.0"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          />
+        </div>
+
+        <div class="field">
+          <label for="emailCC">Total Price</label>
+          <input
+            type="number"
+            step="0.01"
+            pInputText
+            formControlName="totalprice"
+            name="totalprice"
+            [defaultValue]="0.0"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          />
+        </div>
+      </div>
+      <button
+        pButton
+        pRipple
+        label="Save"
+        type="button"
+        (click)="saveToGrid()"
+      ></button>
+    </p-card>
+  </form>
+</div>
