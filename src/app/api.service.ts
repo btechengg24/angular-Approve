@@ -11,14 +11,26 @@ export class ApiService {
 
   private apiUrl1 = environment.apiUrl1;
 
+  private vendorUrl = environment.vendorUrl;
+
+  private vendoritemsUrl = environment.vendoritemsUrl;
+
   constructor(private http: HttpClient) {}
 
-  getAccData(params: any): Observable<any> {
+  getDeptData(params: any): Observable<any> {
     // return this.http.post<any>(this.apiUrl, params);
     return this.http.post<any>(this.apiUrl, params);
   }
 
-  getDeptData(params: any): Observable<any> {
+  getAccData(params: any): Observable<any> {
     return this.http.post<any>(this.apiUrl1, params);
+  }
+
+  getVendorData(params: any): Observable<any> {
+    return this.http.post<any>(this.vendorUrl, params);
+  }
+
+  getVendorItemData(params: any): Observable<any> {
+    return this.http.post<any>(this.vendoritemsUrl, params);
   }
 }

@@ -1,4 +1,10 @@
-import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../api.service';
@@ -7,10 +13,26 @@ import { TableModule } from 'primeng/table';
 import { DropdownModule } from 'primeng/dropdown';
 
 interface DepartmentData {
-  codeKey: string;
-  description: string;
+  codeKey?: string;
+  description?: string;
   orgId?: string;
-  codeId: string;
+  codeId?: string;
+  preferredVendor?: string;
+  vendorId?: string;
+}
+interface AccountData {
+  id?: number;
+  accName?: string;
+}
+interface Row {
+  Department: string;
+  Account: string;
+  VendorPart: string;
+  Item: string;
+  delDate: string;
+  quantity: string;
+  unitprice: string;
+  totalprice: string;
 }
 
 @Component({
@@ -20,11 +42,21 @@ interface DepartmentData {
   templateUrl: './pogrid.component.html',
   styleUrl: './pogrid.component.css',
 })
-export class PogridComponent implements OnInit {
-  @Input() gridData: any[] = [];
+export class PogridComponent implements OnInit, OnChanges {
+  VendorPart: any[] = [
+    { id: 1, value: 'VendorPart1' },
+    { id: 2, value: 'VendorPart2' },
+    { id: 3, value: 'VendorPart3' },
+  ];
+
+  @Input() gridRow: any = [];
+  @Input() vendor: any;
+
+  gridData: any[] = [];
   formGroups: FormGroup[] = [];
   departmentData: DepartmentData[] = [];
   onlyDepartment: DepartmentData[] = [];
+  accountData: AccountData[] = [];
 
   columns = [
     { field: 'Department', header: 'Department' },
@@ -35,33 +67,124 @@ export class PogridComponent implements OnInit {
     { field: 'quantity', header: 'Quantity' },
     { field: 'unitprice', header: 'Unit Price' },
     { field: 'totalprice', header: 'Total Price' },
+    { field: 'Actions', header: 'Actions' },
   ];
 
   constructor(private apiService: ApiService) {}
 
   ngOnInit() {
-    this.gridData.forEach((item) => {
-      const formGroup = new FormGroup({
-        Department: new FormControl(item.Department),
-        Account: new FormControl(item.Account),
-        VendorPart: new FormControl(item.VendorPart),
-        Item: new FormControl(item.Item),
-        delDate: new FormControl(item.delDate),
-        quantity: new FormControl(item.quantity),
-        unitprice: new FormControl(item.unitprice),
-        totalprice: new FormControl(item.totalprice),
+    this.getDeptData();
+    // this.formGroupMapper();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['gridRow'] && !changes['gridRow'].isFirstChange()) {
+      this.gridData.push(changes['gridRow'].currentValue);
+
+      console.log('gridRow', this.gridRow);
+      console.log('gridData', this.gridData);
+
+      this.formGroupMapper(this.gridRow);
+
+      console.log('formGroups', this.formGroups);
+    }
+  }
+
+  formGroupMapper(gridRow: Row) {
+    const formGroup = new FormGroup({
+      Department: new FormControl({
+        value: gridRow.Department,
+        disabled: true,
+      }),
+      Account: new FormControl({ value: gridRow.Account, disabled: true }),
+      VendorPart: new FormControl({
+        value: gridRow.VendorPart,
+        disabled: true,
+      }),
+      Item: new FormControl({ value: gridRow.Item, disabled: true }),
+      delDate: new FormControl({ value: gridRow.delDate, disabled: true }),
+      quantity: new FormControl({ value: gridRow.quantity, disabled: true }),
+      unitprice: new FormControl({ value: gridRow.unitprice, disabled: true }),
+      totalprice: new FormControl({
+        value: gridRow.totalprice,
+        disabled: true,
+      }),
+    });
+    this.formGroups.push(formGroup);
+  }
+
+  editRow(index: number) {
+    const formGroup = this.formGroups[index];
+    formGroup.enable();
+
+    formGroup
+      .get('Department')
+      ?.valueChanges.subscribe((selectedDepartment) => {
+        // console.log('this.formGroup 2', this.formGroup);
+        // console.log('selectedDepartmentinside', selectedDepartment);
+
+        const codeKey = selectedDepartment?.codeKey;
+
+        const params2 = {
+          param1: 1088,
+          param2: 2,
+          param3: 'HIG',
+          param4: codeKey,
+          param5: 'PO',
+        };
+
+        console.log('params2', params2);
+
+        this.apiService.getAccData(params2).subscribe(
+          (data) => {
+            console.log('data', data);
+            this.accountData = data.map((account: any, index: number) => ({
+              id: index,
+              accName: account.accName,
+            }));
+
+            console.log('accountData', this.accountData);
+          },
+          (error) => {
+            console.error('Error fetching data:', error);
+          }
+        );
       });
-      this.formGroups.push(formGroup);
+
+    formGroup.get('quantity')?.valueChanges.subscribe(() => {
+      this.updateTotalPrice(formGroup);
     });
 
-    const params1 = {
+    formGroup.get('unitprice')?.valueChanges.subscribe(() => {
+      this.updateTotalPrice(formGroup);
+    });
+    console.log('formGroups', this.formGroups);
+  }
+
+  deleteRow(index: number) {
+    this.gridData.splice(index, 1);
+    this.formGroups.splice(index, 1);
+
+    console.log('formGroups', this.formGroups);
+  }
+
+  saveRow(index: number) {
+    const formGroup = this.formGroups[index];
+    formGroup.disable();
+
+    this.updateTotalPrice(formGroup);
+
+    console.log('formGroups', this.formGroups);
+  }
+
+  getDeptData() {
+    const paramsacc = {
       param1: 1088,
       param3: 'DEPT',
       param4: 'ALL',
-      // email: '2021ugec078@nitjsr.ac.in',
     };
 
-    this.apiService.getAccData(params1).subscribe(
+    this.apiService.getDeptData(paramsacc).subscribe(
       (data) => {
         // console.log('Data received:', data);
 
@@ -80,12 +203,19 @@ export class PogridComponent implements OnInit {
           })
         );
 
-        console.log('departmentData', this.departmentData);
-        console.log('onlyDepartment', this.onlyDepartment);
+        // console.log('departmentData', this.departmentData);
+        // console.log('onlyDepartment', this.onlyDepartment);
       },
       (error) => {
         console.error('Error fetching data:', error);
       }
     );
+  }
+
+  updateTotalPrice(formGroup: FormGroup) {
+    const quantity = formGroup.get('quantity')?.value || 0;
+    const unitprice = formGroup.get('unitprice')?.value || 0;
+    const totalprice = quantity * unitprice;
+    formGroup.get('totalprice')?.setValue(totalprice, { emitEvent: false });
   }
 }

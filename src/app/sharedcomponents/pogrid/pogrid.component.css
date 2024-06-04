@@ -1,0 +1,23 @@
+.p-table {
+  overflow: visible;
+}
+.p-dropdown {
+  width: 100%;
+}
+.dropdown-container {
+  position: relative;
+  width: 100%;
+}
+
+.p-dropdown-items {
+  position: relative;
+  z-index: 1000;
+}
+
+.button-wrapper {
+  display: flex;
+  gap: 10px;
+}
+i {
+  cursor: pointer;
+}

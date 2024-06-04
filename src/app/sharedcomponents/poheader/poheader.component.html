@@ -30,10 +30,10 @@
         <div class="field">
           <label>Select Vendor</label>
           <p-dropdown
-            [options]="Vendors"
+            [options]="vendorData"
             formControlName="selectVendor"
             placeholder="Select your Vendor"
-            optionLabel="value"
+            optionLabel="preferredVendor"
             [showClear]="true"
             autoWidth="false"
             [style]="{ width: '200px' }"
@@ -94,17 +94,5 @@
       (click)="showDialog()"
     ></button>
   </div>
-  <app-pogrid [gridData]="gridData"></app-pogrid>
-  <!-- <app-pogrid
-    [gridData]="[{
-      Department: 'Dept',
-      Account: 'Acc',
-      VendorPart: 'Vend',
-      Item: 'Ite',
-      delDate: 'date',
-      quantity: 'quan',
-      unitprice: 'unit',
-      totalprice: 'total',
-    }]"
-  ></app-pogrid> -->
+  <app-pogrid [gridRow]="gridRow" [vendor]="selectedVendor"></app-pogrid>
 </div>

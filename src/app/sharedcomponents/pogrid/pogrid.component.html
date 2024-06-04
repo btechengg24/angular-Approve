@@ -1,54 +1,102 @@
-<div>
+<div *ngIf="formGroups.length > 0">
   <p-table
     [columns]="columns"
     [value]="gridData"
     class="p-table"
-    [tableStyle]="{ 'min-width': '50rem', border: '1px solid #000' }"
+    [tableStyle]="{ width: '70%', border: '1px solid #000' }"
   >
-    <ng-template pTemplate="header" let-columns>
+    <ng-template pTemplate="header" let-columns let-rowIndex="rowIndex">
       <tr style="height: 46px">
-        <th *ngFor="let col of columns">
+        <th *ngFor="let col of columns" style="width: max-content">
           {{ col.header }}
         </th>
       </tr>
     </ng-template>
-  </p-table>
-  <p-table
-    [columns]="columns"
-    [value]="gridData"
-    class="p-table"
-    [tableStyle]="{ 'min-width': '50rem', border: '1px solid #000' }"
-  >
+
     <ng-template
       pTemplate="body"
       let-rowData
       let-columns="columns"
-      let-i="index"
+      let-rowIndex="rowIndex"
     >
       <tr style="height: 46px">
-        <td *ngFor="let col of columns" [pEditableColumn]="rowData[col.field]">
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <ng-container *ngIf="col.field === 'Department'; else inputField">
-                <p-dropdown
-                  [options]="onlyDepartment"
-                  optionLabel="description"
-                  placeholder="Select a Department"
-                  autoWidth="false"
-                  [style]="{ width: '200px' }"
-                  editable="true"
-                  [showClear]="true"
-                ></p-dropdown>
-              </ng-container>
-
-              <ng-template #inputField>
-                <input pInputText type="text" formControlName="col.field" />
-              </ng-template>
+        <td *ngFor="let col of columns">
+          <ng-container *ngIf="col.field !== 'Actions'; else actionsColumn">
+            <ng-container
+              *ngIf="
+                col.field !== 'Department' &&
+                  col.field !== 'Account' &&
+                  col.field !== 'VendorPart';
+                else dropdownColumn
+              "
+            >
+              <form [formGroup]="formGroups[rowIndex]">
+                <div>
+                  <input
+                    pInputText
+                    [type]="
+                      col.field === 'Item'
+                        ? 'text'
+                        : col.field === 'delDate'
+                        ? 'date'
+                        : 'number'
+                    "
+                    formControlName="{{ col.field }}"
+                    [disabled]="!formGroups[rowIndex].enabled"
+                  />
+                </div>
+              </form>
+            </ng-container>
+            <ng-template #dropdownColumn>
+              <form [formGroup]="formGroups[rowIndex]">
+                <div class="dropdown-container">
+                  <p-dropdown
+                    *ngIf="col.field === 'Department'"
+                    [options]="onlyDepartment"
+                    optionLabel="description"
+                    autoWidth="false"
+                    [style]="{ width: '200px' }"
+                    styleClass="showBelow"
+                    editable="true"
+                    [showClear]="true"
+                    formControlName="{{ col.field }}"
+                    [disabled]="!formGroups[rowIndex].enabled"
+                  ></p-dropdown>
+                  <p-dropdown
+                    *ngIf="col.field === 'Account'"
+                    [options]="accountData"
+                    optionLabel="accName"
+                    autoWidth="false"
+                    [style]="{ width: '200px' }"
+                    editable="true"
+                    [showClear]="true"
+                    formControlName="{{ col.field }}"
+                    [disabled]="!formGroups[rowIndex].enabled"
+                  ></p-dropdown>
+                  <p-dropdown
+                    *ngIf="col.field === 'VendorPart'"
+                    [options]="VendorPart"
+                    optionLabel="value"
+                    autoWidth="false"
+                    [style]="{ width: '200px' }"
+                    editable="true"
+                    [showClear]="true"
+                    formControlName="{{ col.field }}"
+                    [disabled]="!formGroups[rowIndex].enabled"
+                  ></p-dropdown>
+                </div>
+              </form>
             </ng-template>
-            <ng-template pTemplate="output">
-              {{ rowData[col.field] }}
-            </ng-template>
-          </p-cellEditor>
+          </ng-container>
+          <ng-template #actionsColumn>
+            <td>
+              <div class="button-wrapper">
+                <i class="pi pi-pencil" (click)="editRow(rowIndex)"></i>
+                <i class="pi pi-save" (click)="saveRow(rowIndex)"></i>
+                <i class="pi pi-trash" (click)="deleteRow(rowIndex)"></i>
+              </div>
+            </td>
+          </ng-template>
         </td>
       </tr>
     </ng-template>

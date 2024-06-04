@@ -11,8 +11,19 @@ import { DialogService } from 'primeng/dynamicdialog';
 
 import { ExpenseTypeOption } from 'src/app/schema';
 
+import { ApiService } from '../../api.service';
+
 import { PogridComponent } from '@shared/pogrid/pogrid.component';
 // import { PopopupComponent } from '@shared/popopup/popopup.component';
+
+interface DepartmentData {
+  codeKey?: string;
+  description?: string;
+  orgId?: string;
+  codeId?: string;
+  preferredVendor?: string;
+  vendorId?: string;
+}
 
 @Component({
   selector: 'app-poheader',
@@ -38,11 +49,11 @@ export class PoheaderComponent implements OnInit {
     { id: 2, value: 'Pre-Approval' },
     { id: 3, value: 'Purchase Order' },
   ];
-  Vendors: ExpenseTypeOption[] = [
-    { id: 1, value: 'Vendor1' },
-    { id: 2, value: 'Vendor2' },
-    { id: 3, value: 'Vendor3' },
-  ];
+  // Vendors: ExpenseTypeOption[] = [
+  //   { id: 1, value: 'Vendor1' },
+  //   { id: 2, value: 'Vendor2' },
+  //   { id: 3, value: 'Vendor3' },
+  // ];
   Managers: ExpenseTypeOption[] = [
     { id: 1, value: 'Manager1@gmail.com' },
     { id: 2, value: 'Manager2@gmail.com' },
@@ -51,8 +62,13 @@ export class PoheaderComponent implements OnInit {
 
   formGroup!: FormGroup;
 
-  gridData: any[] = [];
+  // gridData: any[] = [];
+  gridRow: any = [];
+  vendorData: DepartmentData[] = [];
+  selectedVendor: ExpenseTypeOption | null = null;
   i: number = 0;
+
+  constructor(private apiService: ApiService) {}
 
   ngOnInit() {
     this.formGroup = new FormGroup({
@@ -64,6 +80,23 @@ export class PoheaderComponent implements OnInit {
       managerEmail: new FormControl(this.Managers[0]),
       emailCC: new FormControl(null),
     });
+
+    this.formGroup.get('selectVendor')?.valueChanges.subscribe((vendor) => {
+      this.selectedVendor = vendor;
+    });
+
+    const paramsvendor = {
+      param1: 1088,
+      param3: 'HIG',
+    };
+
+    this.apiService.getVendorData(paramsvendor).subscribe((data) => {
+      this.vendorData = data.map((item: DepartmentData) => ({
+        preferredVendor: item.preferredVendor,
+        vendorId: item.vendorId,
+      }));
+      console.log('vendorData', this.vendorData);
+    });
   }
 
   // constructor(private dialogService: DialogService) {}
@@ -72,19 +105,22 @@ export class PoheaderComponent implements OnInit {
     console.log('i', this.i);
 
     const newPO = {
-      Department: 'dept',
-      Account: 'acc',
-      VendorPart: 'vend',
-      Item: 'ite',
-      delDate: 'date',
+      Department: '',
+      Account: '',
+      VendorPart: '',
+      Item: '',
+      delDate: '',
       quantity: this.i,
-      unitprice: '0',
-      totalprice: '0',
+      unitprice: '',
+      totalprice: '',
     };
-    this.gridData.push(newPO);
-
     this.i++;
-    console.log('gridData', this.gridData);
+
+    // this.gridData.push(newPO);
+    // console.log('gridData', this.gridData);
+
+    this.gridRow = newPO;
+    console.log('gridRow', this.gridRow);
   }
 
   // showDialog() {
