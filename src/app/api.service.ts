@@ -7,23 +7,26 @@ import { environment } from '../environments/environment.development';
   providedIn: 'root',
 })
 export class ApiService {
-  private apiUrl = environment.apiUrl;
+  private deptUrl = environment.deptUrl;
 
-  private apiUrl1 = environment.apiUrl1;
+  private accUrl = environment.accUrl;
 
   private vendorUrl = environment.vendorUrl;
 
   private vendoritemsUrl = environment.vendoritemsUrl;
 
+  private requestIdUrl = environment.requestIdUrl;
+
+  private savePoUrl = environment.savePoUrl;
+
   constructor(private http: HttpClient) {}
 
   getDeptData(params: any): Observable<any> {
-    // return this.http.post<any>(this.apiUrl, params);
-    return this.http.post<any>(this.apiUrl, params);
+    return this.http.post<any>(this.deptUrl, params);
   }
 
   getAccData(params: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl1, params);
+    return this.http.post<any>(this.accUrl, params);
   }
 
   getVendorData(params: any): Observable<any> {
@@ -32,5 +35,12 @@ export class ApiService {
 
   getVendorItemData(params: any): Observable<any> {
     return this.http.post<any>(this.vendoritemsUrl, params);
+  }
+
+  getRequestId(params: any): Observable<any> {
+    return this.http.post<any>(this.requestIdUrl, params);
+  }
+  savePO(params: any): Observable<any> {
+    return this.http.post<any>(this.savePoUrl, params);
   }
 }

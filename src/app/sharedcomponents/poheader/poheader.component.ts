@@ -22,7 +22,7 @@ interface DepartmentData {
   orgId?: string;
   codeId?: string;
   preferredVendor?: string;
-  vendorId?: string;
+  vendorId?: number;
 }
 
 @Component({
@@ -65,7 +65,13 @@ export class PoheaderComponent implements OnInit {
   // gridData: any[] = [];
   gridRow: any = [];
   vendorData: DepartmentData[] = [];
+
+  expenseType: ExpenseTypeOption | null = null;
+  startDate: Date = new Date();
   selectedVendor: ExpenseTypeOption | null = null;
+  purpose: string = '';
+  managerEmail: string = '';
+  emailCC: string = '';
   i: number = 0;
 
   constructor(private apiService: ApiService) {}
@@ -74,31 +80,40 @@ export class PoheaderComponent implements OnInit {
     this.formGroup = new FormGroup({
       expenseType: new FormControl(this.ExpenseType[0]),
       startDate: new FormControl(null),
-      selectDate: new FormControl(null),
       selectVendor: new FormControl(null),
       purpose: new FormControl(null),
       managerEmail: new FormControl(this.Managers[0]),
       emailCC: new FormControl(null),
     });
 
-    this.formGroup.get('selectVendor')?.valueChanges.subscribe((vendor) => {
-      this.selectedVendor = vendor;
-    });
+    this.getVendorData();
+  }
 
+  getVendorData() {
     const paramsvendor = {
       param1: 1088,
       param3: 'HIG',
     };
 
-    this.apiService.getVendorData(paramsvendor).subscribe((data) => {
-      this.vendorData = data.map((item: DepartmentData) => ({
-        preferredVendor: item.preferredVendor,
-        vendorId: item.vendorId,
-      }));
-      console.log('vendorData', this.vendorData);
+    this.apiService.getVendorData(paramsvendor).subscribe({
+      next: (data) => {
+        this.vendorData = data.map((item: DepartmentData) => ({
+          preferredVendor: item.preferredVendor,
+          vendorId: item.vendorId,
+        }));
+
+        // console.log('vendorData', this.vendorData);
+      },
+
+      error: (error) => {
+        console.error('Error fetching data:', error);
+      },
+
+      complete: () => {
+        console.log('Vendor Data fetching completed.');
+      },
     });
   }
-
   // constructor(private dialogService: DialogService) {}
 
   showDialog() {
