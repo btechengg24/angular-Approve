@@ -42,7 +42,6 @@
                         : 'number'
                     "
                     formControlName="{{ col.field }}"
-                    [disabled]="!formGroups[rowIndex].enabled"
                   />
                 </div>
               </form>
@@ -60,7 +59,6 @@
                     editable="true"
                     [showClear]="true"
                     formControlName="{{ col.field }}"
-                    [disabled]="!formGroups[rowIndex].enabled"
                   ></p-dropdown>
                   <p-dropdown
                     *ngIf="col.field === 'Account'"
@@ -71,7 +69,6 @@
                     editable="true"
                     [showClear]="true"
                     formControlName="{{ col.field }}"
-                    [disabled]="!formGroups[rowIndex].enabled"
                   ></p-dropdown>
                   <p-dropdown
                     *ngIf="col.field === 'VendorPart'"
@@ -82,7 +79,6 @@
                     editable="true"
                     [showClear]="true"
                     formControlName="{{ col.field }}"
-                    [disabled]="!formGroups[rowIndex].enabled"
                   ></p-dropdown>
                 </div>
               </form>
