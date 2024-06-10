@@ -9,21 +9,12 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
 import { DialogService } from 'primeng/dynamicdialog';
 
-import { ExpenseTypeOption } from 'src/app/schema';
+import { ExpenseTypeOption, VendorData } from 'src/app/schema';
 
 import { ApiService } from '../../api.service';
 
 import { PogridComponent } from '@shared/pogrid/pogrid.component';
 // import { PopopupComponent } from '@shared/popopup/popopup.component';
-
-interface DepartmentData {
-  codeKey?: string;
-  description?: string;
-  orgId?: string;
-  codeId?: string;
-  preferredVendor?: string;
-  vendorId?: number;
-}
 
 @Component({
   selector: 'app-poheader',
@@ -64,7 +55,7 @@ export class PoheaderComponent implements OnInit {
 
   // gridData: any[] = [];
   gridRow: any = [];
-  vendorData: DepartmentData[] = [];
+  vendorData: VendorData[] = [];
 
   expenseType: ExpenseTypeOption | null = null;
   startDate: Date = new Date();
@@ -97,7 +88,7 @@ export class PoheaderComponent implements OnInit {
 
     this.apiService.getVendorData(paramsvendor).subscribe({
       next: (data) => {
-        this.vendorData = data.map((item: DepartmentData) => ({
+        this.vendorData = data.map((item: VendorData) => ({
           preferredVendor: item.preferredVendor,
           vendorId: item.vendorId,
         }));

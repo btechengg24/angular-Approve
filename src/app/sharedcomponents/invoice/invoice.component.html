@@ -1,0 +1,92 @@
+<div class="card wrapper">
+  <form [formGroup]="formGroup">
+    <p-card>
+      <div class="row firstrow">
+        <div class="field">
+          <label>Select Vendor</label>
+          <p-dropdown
+            [options]="vendorData"
+            formControlName="selectVendor"
+            placeholder="Select Vendor"
+            optionLabel="preferredVendor"
+            [showClear]="true"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          ></p-dropdown>
+        </div>
+
+        <div class="field">
+          <label>Invoice</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="invoice"
+            name="invoice"
+            placeholder="Enter Invoice Details"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          />
+        </div>
+        <div class="field">
+          <label>Invoice Amount</label>
+          <input
+            type="number"
+            pInputText
+            formControlName="invoiceAmount"
+            name="invoiceAmount"
+            placeholder="Enter Invoice Amount"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          />
+        </div>
+      </div>
+
+      <div class="row secondrow">
+        <div class="field">
+          <label for="email">Invoice Date</label>
+          <input
+            type="date"
+            pInputText
+            formControlName="invoiceDate"
+            name="invoiceDate"
+            placeholder="Enter Invoice Date"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          />
+        </div>
+
+        <div class="field">
+          <label for="email">Due Date</label>
+          <input
+            type="date"
+            pInputText
+            formControlName="dueDate"
+            name="dueDate"
+            placeholder="Enter Due Date"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          />
+        </div>
+        <div class="field">
+          <label for="email">Remaining Allocation</label>
+          <input
+            type="number"
+            pInputText
+            formControlName="remainingAllocation"
+            name="remainingAllocation"
+            autoWidth="false"
+            [style]="{ width: '200px' }"
+          />
+        </div>
+      </div>
+      <div class="button-wrapper">
+        <button pButton pRipple label="Save"></button>
+        <button pButton pRipple label="Add New PO" (click)="addNewPO()"></button>
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input pInputText placeholder="Type Vendor Part to search" />
+        </span>
+      </div>
+    </p-card>
+  </form>
+</div>

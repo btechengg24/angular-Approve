@@ -6,24 +6,12 @@
 @import "primeng/resources/themes/saga-blue/theme.css";
 @import "primeng/resources/primeng.min.css";
 
-/* :root {
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  margin: 0;
+.card {
+  background: var(--surface-card);
   padding: 2rem;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: var(--surface-500);
+  border-radius: 10px;
+  margin-bottom: 1rem;
 }
-
-h1 {
-  margin-top: 0;
-} */
 
 @tailwind base;
 @tailwind components;

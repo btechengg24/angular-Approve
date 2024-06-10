@@ -1,7 +1,9 @@
-<div *ngIf="showProgress | async; else routerOutlet">
-    <p-progressBar mode="indeterminate" [style]="{ height: '6px' }"></p-progressBar>
+<div class="container" [ngClass]="{'collapsed': sidebarHidden}">
+  <div class="sidebar">
+    <p-button icon="pi pi-align-justify" (click)="toggleSidebar()" label=""></p-button>
+    <app-menu></app-menu>
   </div>
-  <ng-template #routerOutlet>
+  <div class="content">
     <router-outlet></router-outlet>
-  </ng-template>
-  
+  </div>
+</div>

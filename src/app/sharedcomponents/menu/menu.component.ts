@@ -1,22 +1,28 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import { EntityService } from '@api/entity.service';
+import { SidebarModule } from 'primeng/sidebar';
+import { ButtonModule } from 'primeng/button';
 import { MenubarModule } from 'primeng/menubar';
 import { MenuItem } from 'primeng/api';
-import { EntityService } from '@api/entity.service';
+import { TieredMenuModule } from 'primeng/tieredmenu';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [MenubarModule, CommonModule],
+  imports: [
+    MenubarModule,
+    TieredMenuModule,
+    CommonModule,
+    SidebarModule,
+    ButtonModule,
+  ],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.css',
 })
-export class MenuComponent {
-  uFirstName: string = 'Rajesh';
-  uLastName: string = 'Vemunoori';
+export class MenuComponent implements OnInit {
   items: MenuItem[] | undefined;
-  activeUser: boolean = false;
-  constructor() {}
 
   ngOnInit() {
     this.loadItems();
@@ -26,22 +32,22 @@ export class MenuComponent {
     this.items = [
       {
         label: 'Admin',
-        icon: 'pi pi-fw pi-file',
+        icon: 'pi pi-fw pi-user',
         items: [
           {
             label: 'Users',
-            icon: 'pi pi-fw pi-plus',
+            icon: 'pi pi-fw pi-users',
           },
           {
             label: 'Chart of Accounts',
-            icon: 'pi pi-fw pi-trash',
+            icon: 'pi pi-fw pi-address-book',
           },
           {
             separator: true,
           },
           {
             label: 'Budget',
-            icon: 'pi pi-fw pi-external-link',
+            icon: 'pi pi-fw pi-book',
           },
         ],
       },
@@ -51,43 +57,44 @@ export class MenuComponent {
         items: [
           {
             label: 'New Expense',
-            icon: 'pi pi-fw pi-align-left',
+            icon: 'pi pi-fw pi-plus-circle',
           },
           {
             label: 'My Expenses',
-            icon: 'pi pi-fw pi-align-right',
+            icon: 'pi pi-fw pi-book',
           },
           {
             label: 'Drafts',
-            icon: 'pi pi-fw pi-align-center',
+            icon: 'pi pi-fw pi-file-edit',
           },
           {
             label: 'Receipt Store',
-            icon: 'pi pi-fw pi-align-justify',
+            icon: 'pi pi-fw pi-receipt',
           },
         ],
       },
       {
         label: 'Purchase Orders',
-        icon: 'pi pi-fw pi-user',
+        icon: 'pi pi-fw pi-shopping-cart',
         items: [
           {
             label: 'New PO',
-            icon: 'pi pi-fw pi-user-plus',
+            icon: 'pi pi-fw pi-plus-circle',
+            routerLink: ['/newpo'],
           },
           {
             label: 'My POs',
-            icon: 'pi pi-fw pi-user-minus',
+            icon: 'pi pi-fw pi-book',
           },
           {
-            label: 'Receive PO',
-            icon: 'pi pi-fw pi-users',
+            label: 'Received PO',
+            icon: 'pi pi-fw pi-list',
           },
         ],
       },
       {
         label: 'Approvals',
-        icon: 'pi pi-fw pi-calendar',
+        icon: 'pi pi-fw pi-check-square',
         items: [
           {
             label: 'Manager Approvals',
@@ -105,29 +112,30 @@ export class MenuComponent {
       },
       {
         label: 'Invoicing',
-        icon: 'pi pi-fw pi-power-off',
+        icon: 'pi pi-fw pi-calendar',
         items: [
           {
             label: 'New Invoice',
             icon: 'pi pi-fw pi-pencil',
+            routerLink: ['/invoice'],
           },
           {
             label: 'All Invoices',
-            icon: 'pi pi-fw pi-calendar-times',
+            icon: 'pi pi-fw pi-calendar-clock',
           },
         ],
       },
       {
         label: 'Settings',
-        icon: 'pi pi-fw pi-power-off',
+        icon: 'pi pi-fw pi-cog',
         items: [
           {
             label: 'My Profile',
-            icon: 'pi pi-fw pi-pencil',
+            icon: 'pi pi-fw pi-user-edit',
           },
           {
             label: 'Sign Out',
-            icon: 'pi pi-fw pi-calendar-times',
+            icon: 'pi pi-fw pi-sign-out',
           },
         ],
       },
