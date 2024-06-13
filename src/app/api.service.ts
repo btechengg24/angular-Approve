@@ -19,6 +19,8 @@ export class ApiService {
 
   private savePoUrl = environment.savePoUrl;
 
+  private getPoUrl = environment.getPoUrl;
+
   constructor(private http: HttpClient) {}
 
   getDeptData(params: any): Observable<any> {
@@ -40,7 +42,12 @@ export class ApiService {
   getRequestId(params: any): Observable<any> {
     return this.http.post<any>(this.requestIdUrl, params);
   }
+
   savePO(params: any): Observable<any> {
     return this.http.post<any>(this.savePoUrl, params);
+  }
+
+  getPO(params: any): Observable<any> {
+    return this.http.post<any>(this.getPoUrl, params);
   }
 }

@@ -59,7 +59,6 @@ export class PoheaderComponent implements OnInit {
 
   expenseType: ExpenseTypeOption | null = null;
   startDate: Date = new Date();
-  selectedVendor: ExpenseTypeOption | null = null;
   purpose: string = '';
   managerEmail: string = '';
   emailCC: string = '';

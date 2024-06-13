@@ -19,33 +19,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 
-interface DepartmentData {
-  codeKey?: string;
-  description?: string;
-  orgId?: string;
-  codeId?: string;
-  preferredVendor?: string;
-  vendorId?: string;
-}
-interface AccountData {
-  id?: number;
-  accName?: string;
-  acccountCode: string;
-}
-interface VendorPart {
-  vendPartDesc?: string;
-  itemId?: number;
-}
-interface Row {
-  Department: string;
-  Account: string;
-  VendorPart: string;
-  Item: string;
-  delDate: string;
-  quantity: string;
-  unitprice: string;
-  totalprice: string;
-}
+import { DepartmentData, AccountData, VendorPart, Row } from 'src/app/schema';
 
 @Component({
   selector: 'app-pogrid',
@@ -149,7 +123,6 @@ export class PogridComponent implements OnInit, OnChanges {
         this.getAccData(codeKey);
       });
 
-    this;
     formGroup.get('quantity')?.valueChanges.subscribe(() => {
       this.updateTotalPrice(formGroup);
     });
