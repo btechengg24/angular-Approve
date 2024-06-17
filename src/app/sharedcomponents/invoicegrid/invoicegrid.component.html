@@ -1,60 +1,177 @@
 <div *ngIf="poData.length > 0">
-  <p-table
-    [columns]="columns"
-    [value]="poData"
-    class="p-table"
-    [tableStyle]="{ width: '70%', border: '1px solid #000' }"
-  >
-    <ng-template pTemplate="header" let-columns let-rowIndex="rowIndex">
-      <tr style="height: 46px">
-        <th *ngFor="let col of columns" style="width: max-content">
-          <ng-container *ngIf="col.field !== 'checkBox'; else checkBoxColumn">
-            {{ col.header }}
-          </ng-container>
-          <ng-template #checkBoxColumn>
-            <form [formGroup]="formGroup">
-              <input type="checkbox" formControlName="allChecked" />
-            </form>
-          </ng-template>
-        </th>
-      </tr>
-    </ng-template>
-
-    <ng-template
-      pTemplate="body"
-      let-rowData
-      let-columns="columns"
-      let-rowIndex="rowIndex"
+  <div class="invoicegrid-container">
+    <p-table
+      [columns]="columns"
+      [value]="poData"
+      class="p-table"
+      [tableStyle]="{ width: 'max-content', border: '1px solid #000' }"
+      [scrollable]="true"
+      scrollHeight="60vh"
     >
-      <tr style="height: 46px">
-        <td *ngFor="let col of columns">
-          <ng-container
-            *ngIf="
-              col.field !== 'checkBox' && col.field !== 'taxCalculated';
-              else checkboxColumn
-            "
-          >
-            <form [formGroup]="formGroups[rowIndex]">
-              <div>{{ rowData[col.field] }}</div>
-            </form>
-          </ng-container>
-          <ng-template #checkboxColumn>
-            <div *ngIf="col.field === 'checkBox'">
-              <form [formGroup]="formGroups[rowIndex]">
-                <input type="checkbox" formControlName="checkBox" />
-                <label>{{ rowData[col.field] }}</label>
+      <ng-template pTemplate="header" let-columns let-rowIndex="rowIndex">
+        <tr style="height: 46px">
+          <th *ngFor="let col of columns" style="max-width: fit-content">
+            <ng-container *ngIf="col.field !== 'checkBox'; else checkBoxColumn">
+              {{ col.header }}
+            </ng-container>
+            <ng-template #checkBoxColumn>
+              <form [formGroup]="formGroup">
+                <input type="checkbox" formControlName="{{ col.field }}" />
               </form>
-            </div>
+            </ng-template>
+          </th>
+        </tr>
+      </ng-template>
 
-            <div *ngIf="col.field === 'taxCalculated'">
+      <ng-template
+        pTemplate="body"
+        let-rowData
+        let-columns="columns"
+        let-rowIndex="rowIndex"
+      >
+        <tr style="height: 46px">
+          <td *ngFor="let col of columns" style="max-width: fit-content">
+            <ng-container
+              *ngIf="
+                !['checkBox', 'taxCalculated'].includes(col.field);
+                else checkboxColumn
+              "
+            >
+              <ng-container
+                *ngIf="col.field !== 'deptCode'; else dropdownColumn"
+              >
+                <ng-container
+                  *ngIf="
+                    ![
+                      'ourRefNo',
+                      'expLineNo',
+                      'polineseq',
+                      'vendPartno',
+                      'quantity',
+                      'unitPrice',
+                      'preAmount',
+                      'taxAmount1',
+                      'invAmount',
+                      'invLineNo'
+                    ].includes(col.field);
+                    else noneditableColumn
+                  "
+                >
+                  <ng-container
+                    *ngIf="
+                      !['comments'].includes(col.field);
+                      else simpleTextBox
+                    "
+                  >
+                    <form [formGroup]="formGroups[rowIndex]">
+                      <div *ngIf="!['invTax', 'account'].includes(col.field)">
+                        <input
+                          (change)="invDetailsChanged(rowIndex, $event)"
+                          pInputText
+                          type="text"
+                          formControlName="{{ col.field }}"
+                          [style]="{ width: '75px' }"
+                        />
+                      </div>
+                      <div *ngIf="col.field === 'invTax'">
+                        <input
+                          (change)="invTaxChanged(rowIndex, $event)"
+                          pInputText
+                          type="text"
+                          formControlName="{{ col.field }}"
+                          [style]="{ width: '75px' }"
+                        />
+                      </div>
+                      <div *ngIf="col.field === 'account'">
+                        <input
+                          (change)="invTaxChanged(rowIndex, $event)"
+                          pInputText
+                          type="text"
+                          formControlName="{{ col.field }}"
+                          [style]="{ width: '150px' }"
+                        />
+                      </div>
+                    </form>
+                  </ng-container>
+                </ng-container>
+              </ng-container>
+            </ng-container>
+
+            <ng-template #checkboxColumn>
+              <div *ngIf="col.field === 'checkBox'">
+                <form [formGroup]="formGroups[rowIndex]">
+                  <input
+                    (change)="checkBoxChanged(rowIndex, $event)"
+                    type="checkbox"
+                    formControlName="{{ col.field }}"
+                  />
+                </form>
+              </div>
+
+              <div *ngIf="col.field === 'taxCalculated'">
+                <form [formGroup]="formGroups[rowIndex]">
+                  <input
+                    (change)="taxableChanged(rowIndex, $event)"
+                    type="checkbox"
+                    formControlName="{{ col.field }}"
+                    [checked]="rowData[col.field] === 1"
+                  />
+                  <label>{{ rowData[col.field] }}</label>
+                </form>
+              </div>
+            </ng-template>
+
+            <ng-template #dropdownColumn>
               <form [formGroup]="formGroups[rowIndex]">
-                <input type="checkbox" [checked]="rowData[col.field] === 1" />
-                <label>{{ rowData[col.field] }}</label>
+                <div class="dropdown-container">
+                  <p-dropdown
+                    *ngIf="col.field === 'deptCode'"
+                    [options]="onlyDepartment"
+                    optionLabel="description"
+                    autoWidth="false"
+                    [style]="{ width: '150px' }"
+                    styleClass="showBelow"
+                    editable="true"
+                    [showClear]="true"
+                    formControlName="{{ col.field }}"
+                  ></p-dropdown>
+                </div>
               </form>
-            </div>
-          </ng-template>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
+            </ng-template>
+
+            <ng-template #noneditableColumn>
+              <form [formGroup]="formGroups[rowIndex]">
+                <div *ngIf="col.field === 'invAmount'; else nonInvAmount">
+                  <input
+                    type="text"
+                    pInputText
+                    formControlName="{{ col.field }}"
+                    [style]="{ width: '75px' }"
+                  />
+                </div>
+                <ng-template #nonInvAmount>
+                  <div style="width: 75px; justify-content: center">
+                    {{ rowData[col.field] }}
+                  </div>
+                </ng-template>
+              </form>
+            </ng-template>
+
+            <ng-template #simpleTextBox>
+              <form [formGroup]="formGroups[rowIndex]">
+                <div>
+                  <input
+                    pInputText
+                    type="text"
+                    formControlName="{{ col.field }}"
+                    [style]="{ width: '100px' }"
+                  />
+                </div>
+              </form>
+            </ng-template>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
 </div>

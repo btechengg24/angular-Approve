@@ -1,8 +1,8 @@
 .row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin: 20px;
+  align-items: center;
+  margin: 10px;
 }
 
 .field {
@@ -26,12 +26,16 @@ p-dropdown {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin: 0 auto;
+  margin: 0 10px;
   z-index: 0;
+  width: 100%;
+}
+.card {
+  width: 100%;
 }
 
 .button-wrapper {
-  margin: 20px;
+  margin: 10px;
   display: flex;
   flex-direction: row;
   gap: 10px;

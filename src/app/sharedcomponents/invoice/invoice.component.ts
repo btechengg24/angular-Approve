@@ -52,7 +52,7 @@ export class InvoiceComponent implements OnInit {
     this.formGroup = new FormGroup({
       selectVendor: new FormControl(null),
       invoice: new FormControl(null),
-      invoiceAmount: new FormControl(null),
+      invoiceAmount: new FormControl(0),
       invoiceDate: new FormControl(null),
       dueDate: new FormControl(null),
       remainingAllocation: new FormControl({ value: 0, disabled: true }),
@@ -61,13 +61,15 @@ export class InvoiceComponent implements OnInit {
 
     this.getVendorData();
 
-    this.formGroup.get('selectVendor')?.valueChanges.subscribe((vendor) => {
-      if (vendor) {
-        this.getPOData(vendor);
-      }
-    });
+    // this.formGroup.get('selectVendor')?.valueChanges.subscribe((vendor) => {
+    //   if (vendor) {
+    //     this.getPOData(vendor);
+    //   }
+    // });
 
-    // this.getPOData({ preferredVendor: 'AMERICAN HOTEL REGISTER COMPANY' });
+    this.getPOData({
+      preferredVendor: 'AMERICAN SOCIETY OF ASSOCIATION EXECUTIVES',
+    });
 
     this.formGroup
       .get('VendorPart')
@@ -133,6 +135,7 @@ export class InvoiceComponent implements OnInit {
           shippingCost: item.shippingCost,
           invLineNo: index + 1,
           comments: item.comments,
+          taxPercent: item.taxPercent,
         }));
 
         this.filteredPoData = this.poData;
@@ -153,6 +156,8 @@ export class InvoiceComponent implements OnInit {
 
     if (!vendPartno || vendPartno.trim() === '') {
       this.filteredPoData = this.poData;
+
+      console.log('filteredPoData', this.filteredPoData);
     } else {
       const lowerCaseVendPartno = vendPartno.toLowerCase();
 
@@ -161,5 +166,28 @@ export class InvoiceComponent implements OnInit {
       );
     }
     // console.log('filteredPoData', this.filteredPoData);
+  }
+
+  handleTotalInvAmountChange(totalInvAmount: number) {
+    const invoiceAmount = this.formGroup.get('invoiceAmount')?.value;
+    const remainingAllocation = (invoiceAmount - totalInvAmount).toFixed(2);
+    this.formGroup
+      .get('remainingAllocation')
+      ?.setValue(remainingAllocation, { emitEvent: false });
+  }
+
+  setDueDate($event: any) {
+    console.log('$event', $event);
+
+    const invoiceDate = this.formGroup.get('invoiceDate')?.value;
+
+    const dueDate = new Date(invoiceDate);
+    dueDate.setMonth(dueDate.getMonth() + 1);
+
+    const dueDateFormatted = dueDate.toLocaleDateString('en-CA');
+
+    this.formGroup
+      .get('dueDate')
+      ?.setValue(dueDateFormatted, { emitEvent: false });
   }
 }

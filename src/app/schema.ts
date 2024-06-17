@@ -67,4 +67,6 @@ export interface POData {
   shippingCost: number;
   invLineNo: number;
   comments: string;
+
+  taxPercent: number;
 }
