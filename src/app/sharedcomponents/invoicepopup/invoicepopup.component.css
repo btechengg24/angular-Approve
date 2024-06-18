@@ -1,0 +1,10 @@
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+}
+
+.save-button {
+  margin-left: auto; /* Pushes button to the right */
+}

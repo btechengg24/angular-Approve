@@ -15,6 +15,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
+import { ToggleButtonModule } from 'primeng/togglebutton';
 
 import { ApiService } from '../../api.service';
 
@@ -31,17 +32,20 @@ import { POData, DepartmentData } from 'src/app/schema';
     InputTextareaModule,
     CheckboxModule,
     DropdownModule,
+    ToggleButtonModule,
   ],
   templateUrl: './invoicegrid.component.html',
   styleUrl: './invoicegrid.component.css',
 })
 export class InvoicegridComponent implements OnInit, OnChanges {
   @Input() poData: POData[] = [];
+  @Input() mini: boolean = false;
   @Output() totalInvAmountChange = new EventEmitter<number>();
+  @Output() formGroupData = new EventEmitter<FormGroup[]>();
 
   onlyDepartment: DepartmentData[] = [];
   totalInvAmount: number = 0;
-  taxable: boolean = false;
+  formData: any = [];
 
   formGroups: FormGroup[] = [];
   formGroup!: FormGroup;
@@ -68,6 +72,21 @@ export class InvoicegridComponent implements OnInit, OnChanges {
     { field: 'comments', header: 'Comment' },
   ];
 
+  miniColumns = [
+    { field: 'ourRefNo', header: 'PONo' },
+    { field: 'expLineNo', header: 'Line' },
+    { field: 'deptCode', header: 'Dept.' },
+    { field: 'account', header: 'Account' },
+    { field: 'vendPartno', header: 'Vendor Part' },
+    { field: 'preAmount', header: 'PO Amt' },
+    { field: 'invQuantity', header: 'Inv Qty' },
+    { field: 'invUnitPrice', header: 'Inv Unit Price' },
+    { field: 'invAmount', header: 'Inv Amt' },
+    { field: 'invTax', header: 'Inv Tax' },
+    { field: 'shippingCost', header: 'Ship Cost' },
+    { field: 'finalInvoice', header: 'Final Invoice?' },
+  ];
+
   constructor(private apiService: ApiService) {}
 
   ngOnInit() {
@@ -81,13 +100,6 @@ export class InvoicegridComponent implements OnInit, OnChanges {
     this.formGroup.get('checkBox')?.valueChanges.subscribe((value) => {
       this.toggleAllCheckboxes(value);
     });
-
-    this.formGroups.forEach((formGroup) => {
-      console.log('formGroup', formGroup);
-      formGroup.get('checkBox')?.valueChanges.subscribe((value) => {
-        console.log('value', value);
-      });
-    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -100,6 +112,8 @@ export class InvoicegridComponent implements OnInit, OnChanges {
   initializeFormGroups() {
     this.formGroups = [];
     this.poData.forEach((item) => this.formGroupMapper(item));
+
+    console.log('poData', this.poData);
   }
 
   formGroupMapper(gridRow: POData) {
@@ -110,6 +124,10 @@ export class InvoicegridComponent implements OnInit, OnChanges {
       polineseq: new FormControl(gridRow.polineseq),
       deptCode: new FormControl(gridRow.deptCode),
       account: new FormControl(gridRow.account),
+      vendPartno: new FormControl(gridRow.vendPartno),
+      quantity: new FormControl(gridRow.quantity),
+      unitPrice: new FormControl(gridRow.unitPrice),
+      preAmount: new FormControl(gridRow.preAmount),
       taxAmount1: new FormControl(gridRow.taxAmount1),
       taxCalculated: new FormControl(gridRow.taxCalculated),
       invQuantity: new FormControl(gridRow.invQuantity),
@@ -122,7 +140,12 @@ export class InvoicegridComponent implements OnInit, OnChanges {
       shippingCost: new FormControl(gridRow.shippingCost),
       invLineNo: new FormControl(gridRow.invLineNo),
       comments: new FormControl(gridRow.comments),
+      finalInvoice: new FormControl(true),
     });
+    // if (this.mini === true) {
+    //   formGroup.disable();
+    //   formGroup.controls.finalInvoice.enable();
+    // }
 
     this.formGroups.push(formGroup);
   }
@@ -200,7 +223,7 @@ export class InvoicegridComponent implements OnInit, OnChanges {
   }
 
   invDetailsChanged(index?: number, $event?: any) {
-    console.log('$event', $event);
+    // console.log('$event', $event);
 
     if (index != undefined) {
       // this.invTaxChanges(index);
@@ -294,7 +317,7 @@ export class InvoicegridComponent implements OnInit, OnChanges {
     } else {
       const taxPercent = this.poData[index].taxPercent;
 
-      console.log('taxPercent', taxPercent);
+      // console.log('taxPercent', taxPercent);
 
       const invQuantity = +formGroup.get('invQuantity')?.value;
       const invUnitPrice = +formGroup.get('invUnitPrice')?.value;
@@ -310,5 +333,21 @@ export class InvoicegridComponent implements OnInit, OnChanges {
 
       formGroup.get('invAmount')?.setValue(invAmount, { emitEvent: false });
     }
+  }
+
+  handleSaveInGrid() {
+    this.formGroups.forEach((formGroup) => {
+      if (formGroup.value.checkBox === true) {
+        const formGroupValues: any = {};
+        Object.keys(formGroup.controls).forEach((key) => {
+          formGroupValues[key] = formGroup.get(key)?.value;
+        });
+
+        this.formData.push(formGroupValues);
+      }
+    });
+
+    // console.log('formData in grid', this.formData);
+    this.formGroupData.emit(this.formData);
   }
 }

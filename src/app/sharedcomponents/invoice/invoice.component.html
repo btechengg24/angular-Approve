@@ -81,7 +81,7 @@
         </div>
       </div>
       <div class="button-wrapper">
-        <button pButton pRipple label="Save"></button>
+        <button pButton pRipple label="Save" (click)="handleSave()"></button>
         <button
           pButton
           pRipple
@@ -112,6 +112,7 @@
   <app-invoicegrid
     [poData]="filteredPoData"
     (totalInvAmountChange)="handleTotalInvAmountChange($event)"
+    (formGroupData)="handleFormGroupData($event)"
     style="width: 94vw"
   >
   </app-invoicegrid>

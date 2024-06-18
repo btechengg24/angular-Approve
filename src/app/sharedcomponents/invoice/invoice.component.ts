@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -9,7 +9,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
-import { DialogService } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FileUploadModule } from 'primeng/fileupload';
 
@@ -17,7 +17,7 @@ import { ApiService } from '../../api.service';
 
 import { VendorData, POData } from 'src/app/schema';
 import { InvoicegridComponent } from '@shared/invoicegrid/invoicegrid.component';
-import { VendorPart } from '../../schema';
+import { InvoicepopupComponent } from '@shared/invoicepopup/invoicepopup.component';
 
 @Component({
   selector: 'app-invoice',
@@ -34,6 +34,7 @@ import { VendorPart } from '../../schema';
     CheckboxModule,
     InvoicegridComponent,
     FileUploadModule,
+    InvoicepopupComponent,
   ],
   providers: [DialogService],
   templateUrl: './invoice.component.html',
@@ -43,10 +44,18 @@ export class InvoiceComponent implements OnInit {
   vendorData: VendorData[] = [];
   poData: POData[] = [];
   filteredPoData: POData[] = [];
+  dialogRef: DynamicDialogRef | undefined;
 
   formGroup!: FormGroup;
 
-  constructor(private apiService: ApiService, private router: Router) {}
+  @ViewChild(InvoicegridComponent, { static: false })
+  invoiceGridComponent!: InvoicegridComponent;
+
+  constructor(
+    private apiService: ApiService,
+    private router: Router,
+    private dialogService: DialogService
+  ) {}
 
   ngOnInit() {
     this.formGroup = new FormGroup({
@@ -139,7 +148,7 @@ export class InvoiceComponent implements OnInit {
         }));
 
         this.filteredPoData = this.poData;
-        console.log('poData', this.poData);
+        // console.log('poData', this.poData);
       },
       error: (error) => {
         console.error('Error fetching data:', error);
@@ -189,5 +198,36 @@ export class InvoiceComponent implements OnInit {
     this.formGroup
       .get('dueDate')
       ?.setValue(dueDateFormatted, { emitEvent: false });
+  }
+
+  handleSave() {
+    if (this.invoiceGridComponent) {
+      this.invoiceGridComponent.handleSaveInGrid();
+    } else {
+      console.error('InvoicegridComponent is not available.');
+    }
+  }
+
+  handleFormGroupData(formData: any[]) {
+    const filteredFormData = formData.filter(
+      (data) => data.invAmount < data.preAmount
+    );
+
+    if (filteredFormData.length > 0) {
+      this.dialogRef = this.dialogService.open(InvoicepopupComponent, {
+        header: 'Popup',
+        width: '70%',
+        height: '100%',
+        data: {
+          filteredFormData: filteredFormData,
+        },
+      });
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    }
   }
 }
