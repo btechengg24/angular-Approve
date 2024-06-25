@@ -16,7 +16,11 @@
             </ng-container>
             <ng-template #checkBoxColumn>
               <form [formGroup]="formGroup">
-                <input type="checkbox" formControlName="{{ col.field }}" />
+                <input
+                  (input)="toggleAllCheckboxes($event)"
+                  type="checkbox"
+                  formControlName="{{ col.field }}"
+                />
               </form>
             </ng-template>
           </th>
@@ -73,7 +77,7 @@
                           "
                         >
                           <input
-                            (change)="invDetailsChanged(rowIndex, $event)"
+                            (input)="invDetailsChanged(rowIndex, $event)"
                             pInputText
                             type="text"
                             formControlName="{{ col.field }}"
@@ -82,7 +86,7 @@
                         </div>
                         <div *ngIf="col.field === 'invTax'">
                           <input
-                            (change)="invTaxChanged(rowIndex, $event)"
+                            (input)="invTaxChanged(rowIndex, $event)"
                             pInputText
                             type="text"
                             formControlName="{{ col.field }}"
@@ -91,7 +95,7 @@
                         </div>
                         <div *ngIf="col.field === 'account'">
                           <input
-                            (change)="invTaxChanged(rowIndex, $event)"
+                            (input)="invTaxChanged(rowIndex, $event)"
                             pInputText
                             type="text"
                             formControlName="{{ col.field }}"
@@ -108,7 +112,7 @@
                 <div *ngIf="col.field === 'checkBox'">
                   <form [formGroup]="formGroups[rowIndex]">
                     <input
-                      (change)="checkBoxChanged(rowIndex, $event)"
+                      (input)="checkBoxChanged(rowIndex, $event)"
                       type="checkbox"
                       formControlName="{{ col.field }}"
                     />
@@ -118,7 +122,7 @@
                 <div *ngIf="col.field === 'taxCalculated'">
                   <form [formGroup]="formGroups[rowIndex]">
                     <input
-                      (change)="taxableChanged(rowIndex, $event)"
+                      (input)="taxableChanged(rowIndex, $event)"
                       type="checkbox"
                       formControlName="{{ col.field }}"
                       [checked]="rowData[col.field] === 1"

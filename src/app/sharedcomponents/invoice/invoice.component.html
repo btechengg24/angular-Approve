@@ -1,7 +1,7 @@
 <div class="card wrapper">
   <form [formGroup]="formGroup">
     <p-card class="card">
-      <div class="row firstrow">
+      <div class="row">
         <div class="field">
           <label>Select Vendor</label>
           <p-dropdown
@@ -30,6 +30,7 @@
         <div class="field">
           <label>Invoice Amount</label>
           <input
+            (input)="handleInvoiceAmountChange($event)"
             type="number"
             pInputText
             formControlName="invoiceAmount"
@@ -41,7 +42,7 @@
         </div>
       </div>
 
-      <div class="row secondrow">
+      <div class="row">                                    
         <div class="field">
           <label>Invoice Date</label>
           <input

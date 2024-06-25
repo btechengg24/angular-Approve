@@ -19,6 +19,8 @@ import { VendorData, POData } from 'src/app/schema';
 import { InvoicegridComponent } from '@shared/invoicegrid/invoicegrid.component';
 import { InvoicepopupComponent } from '@shared/invoicepopup/invoicepopup.component';
 
+import { formatDate } from '@angular/common';
+
 @Component({
   selector: 'app-invoice',
   standalone: true,
@@ -44,6 +46,8 @@ export class InvoiceComponent implements OnInit {
   vendorData: VendorData[] = [];
   poData: POData[] = [];
   filteredPoData: POData[] = [];
+  totalInvAmount: number = 0;
+
   dialogRef: DynamicDialogRef | undefined;
 
   formGroup!: FormGroup;
@@ -64,21 +68,21 @@ export class InvoiceComponent implements OnInit {
       invoiceAmount: new FormControl(0),
       invoiceDate: new FormControl(null),
       dueDate: new FormControl(null),
-      remainingAllocation: new FormControl({ value: 0, disabled: true }),
+      remainingAllocation: new FormControl({ value: 0.0, disabled: true }),
       VendorPart: new FormControl(''),
     });
 
     this.getVendorData();
 
-    // this.formGroup.get('selectVendor')?.valueChanges.subscribe((vendor) => {
-    //   if (vendor) {
-    //     this.getPOData(vendor);
-    //   }
-    // });
-
-    this.getPOData({
-      preferredVendor: 'AMERICAN SOCIETY OF ASSOCIATION EXECUTIVES',
+    this.formGroup.get('selectVendor')?.valueChanges.subscribe((vendor) => {
+      if (vendor) {
+        this.getPOData(vendor);
+      }
     });
+
+    // this.getPOData({
+    //   preferredVendor: 'AMERICAN SOCIETY OF ASSOCIATION EXECUTIVES',
+    // });
 
     this.formGroup
       .get('VendorPart')
@@ -123,7 +127,7 @@ export class InvoiceComponent implements OnInit {
 
     this.apiService.getPO(paramsPO).subscribe({
       next: (data) => {
-        this.poData = data.map((item: POData, index: number) => ({
+        this.poData = data.map((item: any, index: number) => ({
           ourRefNo: item.ourRefNo,
           expLineNo: item.expLineNo,
           polineseq: item.polineseq,
@@ -145,6 +149,17 @@ export class InvoiceComponent implements OnInit {
           invLineNo: index + 1,
           comments: item.comments,
           taxPercent: item.taxPercent,
+
+          reqId: item.reqId,
+          qtyReceived: item.qtyReceived,
+          cancelFlag: 0,
+          poMasterFlag: item.masterFlag,
+          poDetailsFlag: item.detailsFlag,
+          packageUnit: item.packageUnit,
+          itemCode: item.itemCode,
+          lastUpdatedSource: item.lastUpdSource,
+          poStartDate: item.startDate,
+          poPurpose: item.purpose,
         }));
 
         this.filteredPoData = this.poData;
@@ -159,25 +174,26 @@ export class InvoiceComponent implements OnInit {
     });
   }
 
-  filterPOData(vendPartno: string) {
-    // console.log('poData', this.poData);
-    // console.log('vendPartno', vendPartno, 'end');
-
-    if (!vendPartno || vendPartno.trim() === '') {
+  filterPOData(searchTerm: string) {
+    if (!searchTerm || searchTerm.trim() === '') {
       this.filteredPoData = this.poData;
-
-      console.log('filteredPoData', this.filteredPoData);
     } else {
-      const lowerCaseVendPartno = vendPartno.toLowerCase();
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      const isNumeric = !isNaN(Number(lowerCaseSearchTerm));
 
-      this.filteredPoData = this.poData.filter((item) =>
-        item.vendPartno.toLowerCase().startsWith(lowerCaseVendPartno)
-      );
+      this.filteredPoData = this.poData.filter((item) => {
+        if (isNumeric) {
+          return item.ourRefNo.toString().startsWith(lowerCaseSearchTerm);
+        } else {
+          return item.vendPartno.toLowerCase().startsWith(lowerCaseSearchTerm);
+        }
+      });
     }
-    // console.log('filteredPoData', this.filteredPoData);
   }
 
   handleTotalInvAmountChange(totalInvAmount: number) {
+    this.totalInvAmount = totalInvAmount;
+
     const invoiceAmount = this.formGroup.get('invoiceAmount')?.value;
     const remainingAllocation = (invoiceAmount - totalInvAmount).toFixed(2);
     this.formGroup
@@ -185,10 +201,25 @@ export class InvoiceComponent implements OnInit {
       ?.setValue(remainingAllocation, { emitEvent: false });
   }
 
-  setDueDate($event: any) {
-    console.log('$event', $event);
+  handleInvoiceAmountChange($event: any) {
+    // console.log('event', $event);
 
-    const invoiceDate = this.formGroup.get('invoiceDate')?.value;
+    const invoiceAmount = +$event.target.value;
+    // console.log('invoiceAmount', invoiceAmount);
+    const remainingAllocation = (invoiceAmount - this.totalInvAmount).toFixed(
+      2
+    );
+    // console.log('remainingAllocation', remainingAllocation);
+
+    this.formGroup
+      .get('remainingAllocation')
+      ?.setValue(remainingAllocation, { emitEvent: false });
+  }
+
+  setDueDate($event: any) {
+    // console.log('$event', $event);
+
+    const invoiceDate = $event.target.value;
 
     const dueDate = new Date(invoiceDate);
     dueDate.setMonth(dueDate.getMonth() + 1);
@@ -209,11 +240,31 @@ export class InvoiceComponent implements OnInit {
   }
 
   handleFormGroupData(formData: any[]) {
-    const filteredFormData = formData.filter(
-      (data) => data.invAmount < data.preAmount
-    );
+    const filteredFormData: any[] = [];
+    const saveFormData: any[] = [];
+
+    formData.map((data) => {
+      if (data.invAmount < data.preAmount) {
+        filteredFormData.push(data);
+      } else {
+        saveFormData.push(data);
+      }
+    });
+
+    console.log('filteredFormData', filteredFormData);
+    console.log('saveFormData', saveFormData);
+
+    saveFormData.forEach((item) => {
+      item.finalInvoice = false;
+    });
+
+    // console.log('saveFormData', saveFormData);
 
     if (filteredFormData.length > 0) {
+      // console.log('if part');
+
+      if (saveFormData.length > 0) this.handleActualSave(saveFormData);
+
       this.dialogRef = this.dialogService.open(InvoicepopupComponent, {
         header: 'Popup',
         width: '70%',
@@ -222,7 +273,162 @@ export class InvoiceComponent implements OnInit {
           filteredFormData: filteredFormData,
         },
       });
+
+      this.dialogRef.onClose.subscribe((returnedData) => {
+        if (returnedData) {
+          console.log('Returned Data from popup:', returnedData);
+
+          this.handleActualSave(returnedData);
+        }
+      });
+    } else {
+      // console.log('else part');
+      this.handleActualSave(formData);
     }
+  }
+
+  handleActualSave(formData: any[]) {
+    console.log('formData in invoice', formData);
+
+    const form = this.formGroup.value;
+    console.log('form in invoice', form);
+
+    // const mockform = {
+    //   VendorPart: '',
+    //   dueDate: '2024-07-21',
+    //   invoice: 'test-l',
+    //   invoiceAmount: 386.1,
+    //   invoiceDate: '2024-06-21',
+    //   selectVendor: {
+    //     preferredVendor: 'AMERICAN SOCIETY OF ASSOCIATION EXECUTIVES',
+    //     vendorId: '6358',
+    //   },
+    // };
+    // const mockformData = [
+    //   {
+    //     account: '106244000.000-Condo Rental Expense',
+    //     accountCode: '106244000.000',
+    //     cancelFlag: 0,
+    //     checkBox: true,
+    //     comments: 'testing',
+    //     deptCode: 'ROOMS',
+    //     expItem: 'Condo Rental Expense',
+    //     expLineNo: 2,
+    //     finalInvoice: false,
+    //     invAmount: 386.1,
+    //     invLineNo: 1,
+    //     invQuantity: 8,
+    //     invTax: 26.1,
+    //     invUnitPrice: 45,
+    //     itemCode: '',
+    //     lastUpdatedSource: '',
+    //     ourRefNo: '11091019',
+    //     packageUnit: 'EA',
+    //     poDetailsFlag: 0,
+    //     poMasterFlag: 0,
+    //     poPurpose: 'testing to check PO amount recalculation',
+    //     poStartDate: '',
+    //     polineseq: 0,
+    //     preAmount: 386.1,
+    //     qtyReceived: 0,
+    //     quantity: 8,
+    //     reqId: 1109,
+    //     shippingCost: 0,
+    //     taxAmount1: 26.1,
+    //     taxCalculated: 1,
+    //     taxPercent: 7.25,
+    //     unitPrice: 45,
+    //     vendPartno: 'TESTVENDPART',
+    //   },
+    // ];
+
+    let paramsSaveInvoice: any[] = [];
+
+    formData.forEach((item) => {
+      paramsSaveInvoice.push({
+        orgId: 0,
+        compCode: 'HIG',
+        ourRefNo: item.ourRefNo,
+        requestId: item.reqId,
+
+        invNo: form.invoice,
+
+        invLineNo: item.invLineNo,
+
+        invDate: formatDate(form.invoiceDate, 'MM/dd/yyyy', 'en-US'),
+
+        amtPaid: 0,
+        addedBy: 0,
+        modifiedBy: 0,
+
+        expLineNo: item.expLineNo,
+
+        preferredVendor: form.selectVendor.preferredVendor,
+        totalInvAmt: form.invoiceAmount,
+        dueDate: formatDate(form.dueDate, 'MM/dd/yyyy', 'en-US'),
+
+        polineseq: item.polineseq,
+        poAmount: +item.preAmount,
+        poInvAmount: +item.invAmount,
+        type: 1,
+        masterFlag: +item.expLineNo === 1 ? 1 : 0,
+        detailsFlag: 1,
+        quantity: item.quantity,
+        qtyReceived: item.qtyReceived,
+        accountCode: item.accountCode,
+
+        // description: item, // doubt
+        invPath: '',
+        invName: '',
+        // invoiceId: ,
+
+        cancelFlag: item.finalInvoice === true ? '1' : '0',
+        postdate: '',
+        batchcnt: 0,
+        shippingCost: item.shippingCost,
+        taxAmount1: item.taxAmount1,
+        unitPrice: item.unitPrice,
+        comments: item.comments,
+        deptCode: item.deptCode,
+
+        poMasterFlag: item.poMasterFlag,
+        poDetailsFlag: item.poDetailsFlag,
+
+        packageUnit: item.packageUnit,
+        poStartDate: item.poStartDate,
+        poPurpose: item.poPurpose,
+        taxPercent: item.taxPercent,
+        taxCalculated: item.taxCalculated,
+        vendPartNo: item.vendPartno,
+        itemCode: item.itemCode,
+        lastUpdatedSource: item.lastUpdatedSource,
+      });
+    });
+
+    console.log('paramsSaveInvoice', paramsSaveInvoice);
+
+    // let string = JSON.stringify(paramsSaveInvoice);
+    // console.log(typeof string, string);
+
+    // let object = JSON.parse(string);
+    // console.log(typeof object, object);
+
+    // this.apiService.saveInvoice(paramsSaveInvoice).subscribe({
+    //   next: (data) => {
+    //     console.log('data', data);
+    //   },
+    //   error: (error) => {
+    //     console.error('Error fetching data:', error);
+    //   },
+    //   complete: () => {
+    //     console.log('Saving Invoice completed.');
+    //     this.refreshInvoiceGrid();
+    //   },
+    // });
+  }
+
+  refreshInvoiceGrid() {
+    this.getPOData(this.formGroup.get('selectVendor')?.value);
   }
 
   ngOnDestroy() {

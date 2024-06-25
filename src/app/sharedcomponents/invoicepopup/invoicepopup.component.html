@@ -4,7 +4,15 @@
       Below invoices have PO amount more than invoice amount. Please confirm if
       they are final invoices.
     </p>
-    <p-button class="save-button" (click)="onSave()" label="Save"></p-button>
+    <p-button
+      class="save-button"
+      (click)="handleSave()"
+      label="Save"
+    ></p-button>
   </div>
-  <app-invoicegrid [poData]="filteredFormData" [mini]="true"></app-invoicegrid>
+  <app-invoicegrid
+    [poData]="filteredFormData"
+    [mini]="true"
+    (formGroupData)="handleFormGroupData($event)"
+  ></app-invoicegrid>
 </div>

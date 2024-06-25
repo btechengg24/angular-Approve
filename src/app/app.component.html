@@ -1,8 +1,6 @@
-<div class="container" [ngClass]="{'collapsed': sidebarHidden}">
-  <div class="sidebar">
-    <p-button icon="pi pi-align-justify" (click)="toggleSidebar()" label=""></p-button>
-    <app-menu></app-menu>
-  </div>
+<div class="container">
+  <app-menu></app-menu>
+
   <div class="content">
     <router-outlet></router-outlet>
   </div>

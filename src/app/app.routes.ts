@@ -12,7 +12,7 @@ export const routes: Routes = [
     component: Components.AuthComponent,
   },
   {
-    path: 'newpo',
+    path: 'po',
     component: Components.NewpoComponent,
   },
   {

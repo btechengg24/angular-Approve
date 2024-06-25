@@ -69,4 +69,15 @@ export interface POData {
   comments: string;
 
   taxPercent: number;
+
+  reqId: number;
+  qtyReceived: number;
+  cancelFlag: number;
+  poMasterFlag: number;
+  poDetailsFlag: number;
+  packageUnit: string;
+  itemCode: string;
+  lastUpdatedSource: string;
+  poStartDate: string;
+  poPurpose: string;
 }

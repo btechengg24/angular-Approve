@@ -1,28 +1,29 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { EntityService } from '@api/entity.service';
-import { SidebarModule } from 'primeng/sidebar';
-import { ButtonModule } from 'primeng/button';
-import { MenubarModule } from 'primeng/menubar';
+import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
-import { TieredMenuModule } from 'primeng/tieredmenu';
+import { MenubarModule } from 'primeng/menubar';
+// import { AuthService } from '@api/auth/auth.service';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [
-    MenubarModule,
-    TieredMenuModule,
-    CommonModule,
-    SidebarModule,
-    ButtonModule,
-  ],
+  imports: [MenubarModule, CommonModule],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.css',
 })
-export class MenuComponent implements OnInit {
+export class MenuComponent {
+  uFirstName: string = 'Rajesh';
+  uLastName: string = 'Vemunoori';
   items: MenuItem[] | undefined;
+  activeUser: boolean = true;
+
+  constructor(
+    // private auth: AuthService,
+    private router: Router
+  ) {
+    // this.activeUser = this.auth.activeUser;
+  }
 
   ngOnInit() {
     this.loadItems();
@@ -37,39 +38,42 @@ export class MenuComponent implements OnInit {
           {
             label: 'Users',
             icon: 'pi pi-fw pi-users',
+            // command: () => {
+            //   this.router.navigate(['/mypos']);
+            // },
           },
           {
             label: 'Chart of Accounts',
-            icon: 'pi pi-fw pi-address-book',
+            icon: 'pi pi-fw pi-list',
           },
           {
             separator: true,
           },
           {
             label: 'Budget',
-            icon: 'pi pi-fw pi-book',
+            icon: 'pi pi-fw pi-wallet',
           },
         ],
       },
       {
         label: 'Expenses',
-        icon: 'pi pi-fw pi-pencil',
+        icon: 'pi pi-fw pi-dollar',
         items: [
           {
             label: 'New Expense',
-            icon: 'pi pi-fw pi-plus-circle',
+            icon: 'pi pi-fw pi-plus',
           },
           {
             label: 'My Expenses',
-            icon: 'pi pi-fw pi-book',
+            icon: 'pi pi-fw pi-list',
           },
           {
             label: 'Drafts',
-            icon: 'pi pi-fw pi-file-edit',
+            icon: 'pi pi-fw pi-save',
           },
           {
             label: 'Receipt Store',
-            icon: 'pi pi-fw pi-receipt',
+            icon: 'pi pi-fw pi-file-pdf',
           },
         ],
       },
@@ -79,49 +83,68 @@ export class MenuComponent implements OnInit {
         items: [
           {
             label: 'New PO',
-            icon: 'pi pi-fw pi-plus-circle',
-            routerLink: ['/newpo'],
+            icon: 'pi pi-fw pi-cart-plus',
+            command: () => {
+              this.router.navigate(['/po']);
+            },
           },
           {
             label: 'My POs',
-            icon: 'pi pi-fw pi-book',
+            icon: 'pi pi-fw pi-list',
+            // command: () => {
+            //   this.router.navigate(['/mypos']);
+            // },
           },
           {
-            label: 'Received PO',
-            icon: 'pi pi-fw pi-list',
+            label: 'Receive PO',
+            icon: 'pi pi-fw pi-receipt',
+            // command: () => {
+            //   this.router.navigate(['/mypos']);
+            // },
           },
         ],
       },
       {
         label: 'Approvals',
-        icon: 'pi pi-fw pi-check-square',
+        icon: 'pi pi-fw pi-file-check',
         items: [
           {
             label: 'Manager Approvals',
-            icon: 'pi pi-fw pi-pencil',
+            icon: 'pi pi-fw pi-file-check',
+            command: () => {
+              this.router.navigate(['/mgraproval']);
+            },
           },
           {
             label: 'AP Approvals',
-            icon: 'pi pi-fw pi-calendar-times',
+            icon: 'pi pi-fw pi-file-check',
+            command: () => {
+              this.router.navigate(['/mgraproval']);
+            },
           },
           {
             label: 'Batches',
-            icon: 'pi pi-fw pi-calendar-times',
+            icon: 'pi pi-fw pi-list-check',
           },
         ],
       },
       {
-        label: 'Invoicing',
-        icon: 'pi pi-fw pi-calendar',
+        label: 'Invoice',
+        icon: 'pi pi-fw pi-receipt',
         items: [
           {
             label: 'New Invoice',
-            icon: 'pi pi-fw pi-pencil',
-            routerLink: ['/invoice'],
+            icon: 'pi pi-fw pi-plus',
+            command: () => {
+              this.router.navigate(['/invoice']);
+            },
           },
           {
             label: 'All Invoices',
-            icon: 'pi pi-fw pi-calendar-clock',
+            icon: 'pi pi-fw pi-list-check',
+            // command: () => {
+            //   this.router.navigate(['/mypos']);
+            // },
           },
         ],
       },
@@ -131,7 +154,7 @@ export class MenuComponent implements OnInit {
         items: [
           {
             label: 'My Profile',
-            icon: 'pi pi-fw pi-user-edit',
+            icon: 'pi pi-fw pi-user',
           },
           {
             label: 'Sign Out',

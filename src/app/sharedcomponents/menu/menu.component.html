@@ -1,2 +1,6 @@
-<!-- <p-menubar [model]="items"></p-menubar> -->
-<p-tieredMenu [model]="items"></p-tieredMenu>
+<div *ngIf="activeUser">
+  <p-menubar
+    [model]="items"
+    [ngStyle]="{ display: 'inline-block' }"
+  ></p-menubar>
+</div>

@@ -1,7 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { DynamicDialogConfig } from 'primeng/dynamicdialog';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
 
 import { InvoicegridComponent } from '@shared/invoicegrid/invoicegrid.component';
@@ -17,10 +17,21 @@ export class InvoicepopupComponent implements OnInit {
   filteredFormData: any[] = [];
   reqFormData: any[] = [];
 
-  constructor(public config: DynamicDialogConfig) {}
+  @ViewChild(InvoicegridComponent, { static: false })
+  invoiceGridComponent!: InvoicegridComponent;
+
+  constructor(
+    private config: DynamicDialogConfig,
+    private dialogRef: DynamicDialogRef
+  ) {}
 
   ngOnInit() {
+    this.filteredFormData = [];
+    this.reqFormData = [];
+
     this.filteredFormData = this.config.data.filteredFormData;
+
+    console.log('filteredFormData', this.filteredFormData);
 
     this.reqFormData = this.filteredFormData.map((item) => ({
       ourRefNo: item.ourRefNo,
@@ -38,7 +49,18 @@ export class InvoicepopupComponent implements OnInit {
       shippingCost: item.shippingCost,
     }));
   }
-  onSave() {
-    console.log('saved');
+
+  handleSave() {
+    if (this.invoiceGridComponent) {
+      this.invoiceGridComponent.handleSaveInGrid();
+    } else {
+      console.error('InvoicegridComponent is not available.');
+    }
+  }
+
+  handleFormGroupData(formData: any[]) {
+    console.log('formData in popup', formData);
+
+    this.dialogRef.close(formData);
   }
 }

@@ -45,7 +45,6 @@ export class InvoicegridComponent implements OnInit, OnChanges {
 
   onlyDepartment: DepartmentData[] = [];
   totalInvAmount: number = 0;
-  formData: any = [];
 
   formGroups: FormGroup[] = [];
   formGroup!: FormGroup;
@@ -97,9 +96,9 @@ export class InvoicegridComponent implements OnInit, OnChanges {
       checkBox: new FormControl(false),
     });
 
-    this.formGroup.get('checkBox')?.valueChanges.subscribe((value) => {
-      this.toggleAllCheckboxes(value);
-    });
+    // this.formGroup.get('checkBox')?.valueChanges.subscribe((value) => {
+    //   this.toggleAllCheckboxes(value);
+    // });
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -113,7 +112,7 @@ export class InvoicegridComponent implements OnInit, OnChanges {
     this.formGroups = [];
     this.poData.forEach((item) => this.formGroupMapper(item));
 
-    console.log('poData', this.poData);
+    console.log('poData in grid', this.poData);
   }
 
   formGroupMapper(gridRow: POData) {
@@ -142,15 +141,18 @@ export class InvoicegridComponent implements OnInit, OnChanges {
       comments: new FormControl(gridRow.comments),
       finalInvoice: new FormControl(true),
     });
-    // if (this.mini === true) {
-    //   formGroup.disable();
-    //   formGroup.controls.finalInvoice.enable();
-    // }
+    if (this.mini === true) {
+      formGroup.disable();
+      formGroup.controls.finalInvoice.enable();
+    }
 
     this.formGroups.push(formGroup);
   }
 
-  toggleAllCheckboxes(value: boolean) {
+  toggleAllCheckboxes($event: any) {
+    // console.log('event', $event);
+    const value = $event.target.checked;
+
     this.formGroups.forEach((formGroup) => {
       formGroup.get('checkBox')?.setValue(value, { emitEvent: false });
       // console.log("('checkBox')?.value", formGroup.get('checkBox')?.value);
@@ -336,18 +338,36 @@ export class InvoicegridComponent implements OnInit, OnChanges {
   }
 
   handleSaveInGrid() {
-    this.formGroups.forEach((formGroup) => {
-      if (formGroup.value.checkBox === true) {
+    // console.log('formGroups', this.formGroups);
+    let formData: any[] = [];
+
+    if (this.mini) {
+      this.formGroups.forEach((formGroup, index) => {
         const formGroupValues: any = {};
         Object.keys(formGroup.controls).forEach((key) => {
           formGroupValues[key] = formGroup.get(key)?.value;
         });
 
-        this.formData.push(formGroupValues);
-      }
-    });
+        const originalPOData = this.poData[index];
 
-    // console.log('formData in grid', this.formData);
-    this.formGroupData.emit(this.formData);
+        formData.push({ ...originalPOData, ...formGroupValues });
+      });
+    } else {
+      this.formGroups.forEach((formGroup, index) => {
+        if (formGroup.value.checkBox === true) {
+          const formGroupValues: any = {};
+          Object.keys(formGroup.controls).forEach((key) => {
+            formGroupValues[key] = formGroup.get(key)?.value;
+          });
+
+          const originalPOData = this.poData[index];
+
+          formData.push({ ...originalPOData, ...formGroupValues });
+        }
+      });
+    }
+
+    console.log('formData in grid', formData);
+    this.formGroupData.emit(formData);
   }
 }
