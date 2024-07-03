@@ -34,9 +34,9 @@ export interface Row {
   VendorPart: string;
   Item: string;
   delDate: string;
-  quantity: string;
-  unitprice: string;
-  totalprice: string;
+  quantity: number;
+  unitprice: number;
+  totalprice: number;
 }
 
 export interface POData {

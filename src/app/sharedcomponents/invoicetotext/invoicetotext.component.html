@@ -1,0 +1,12 @@
+<div>
+  <h2>Upload Invoice PDF</h2>
+  <p-fileUpload
+    mode="basic"
+    name="invoice"
+    chooseIcon="pi pi-upload"
+    accept="image/*"
+    chooseLabel="Browse"
+    (onSelect)="onFileSelect($event)"
+  />
+  <!-- (onUpload)="onFileUpload($event)" -->
+</div>

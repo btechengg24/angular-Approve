@@ -1,9 +1,11 @@
 import {
   Component,
   Input,
+  Output,
   OnInit,
   OnChanges,
   SimpleChanges,
+  EventEmitter,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -12,7 +14,9 @@ import {
   FormGroup,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { ApiService } from '../../api.service';
+
+import { EntityService } from '@api/entity.service';
+import { Paramify } from '@api/paramify';
 
 import { TableModule } from 'primeng/table';
 import { DropdownModule } from 'primeng/dropdown';
@@ -38,6 +42,7 @@ import { DepartmentData, AccountData, VendorPart, Row } from 'src/app/schema';
 export class PogridComponent implements OnInit, OnChanges {
   @Input() gridRow: any = [];
   @Input() form: any;
+  @Output() gridFormData = new EventEmitter<any[]>();
 
   gridData: any[] = [];
   formGroups: FormGroup[] = [];
@@ -47,6 +52,7 @@ export class PogridComponent implements OnInit, OnChanges {
   vendorPart: VendorPart[] = [];
   selectedAccount: any;
   selectedDepartment: any;
+  editingIndex: number | null = null;
 
   columns = [
     { field: 'Department', header: 'Department' },
@@ -60,10 +66,18 @@ export class PogridComponent implements OnInit, OnChanges {
     { field: 'Actions', header: 'Actions' },
   ];
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private entityService: EntityService,
+    private paramify: Paramify
+  ) {}
 
   ngOnInit() {
     this.getDeptData();
+    // console.log('form', this.form);
+
+    if (this.form.selectVendor != null) {
+      this.getVendorItemData(this.form.selectVendor);
+    }
     // this.formGroupMapper();
   }
 
@@ -71,7 +85,7 @@ export class PogridComponent implements OnInit, OnChanges {
     if (changes['gridRow'] && !changes['gridRow'].isFirstChange()) {
       this.gridData.push(changes['gridRow'].currentValue);
 
-      console.log('gridRow', this.gridRow);
+      // console.log('gridRow', this.gridRow);
       console.log('gridData', this.gridData);
 
       this.formGroupMapper(this.gridRow);
@@ -79,7 +93,7 @@ export class PogridComponent implements OnInit, OnChanges {
       console.log('formGroups', this.formGroups);
     }
     if (changes['form'] && !changes['form'].isFirstChange()) {
-      console.log('formvalue', this.form);
+      this.getVendorItemData(this.form?.selectVendor);
     }
   }
 
@@ -107,11 +121,33 @@ export class PogridComponent implements OnInit, OnChanges {
   }
 
   editRow(index: number) {
+    console.log('index', index);
+    if (this.editingIndex !== null) return;
+
+    this.editingIndex = index;
+
     const formGroup = this.formGroups[index];
     formGroup.enable();
 
+    formGroup.get('totalprice')?.disable();
+
     // console.log('this.form?.selectvendor', this.form.selectVendor);
-    this.getVendorItemData(this.form?.selectVendor);
+
+    formGroup.get('quantity')?.valueChanges.subscribe(() => {
+      this.updateTotalPrice(formGroup);
+    });
+
+    formGroup.get('unitprice')?.valueChanges.subscribe(() => {
+      this.updateTotalPrice(formGroup);
+    });
+    // console.log('formGroups', this.formGroups);
+  }
+
+  handleDepartmentChange(index: number, event: any) {
+    // console.log('index', index);
+    // console.log('event', event);
+
+    const formGroup = this.formGroups[index];
 
     formGroup
       .get('Department')
@@ -122,39 +158,57 @@ export class PogridComponent implements OnInit, OnChanges {
 
         this.getAccData(codeKey);
       });
+  }
+  handleAccountChange(index: number, event: any) {
+    // console.log('index', index);
+    // console.log('event', event);
 
-    formGroup.get('quantity')?.valueChanges.subscribe(() => {
-      this.updateTotalPrice(formGroup);
-    });
+    const formGroup = this.formGroups[index];
 
-    formGroup.get('unitprice')?.valueChanges.subscribe(() => {
-      this.updateTotalPrice(formGroup);
-    });
-    console.log('formGroups', this.formGroups);
+    const account = formGroup.get('Account')?.value;
+
+    // formGroup.get('Account')?.setValue(account, { emitEvent: false });
   }
 
   deleteRow(index: number) {
+    console.log('index', index);
+
     this.gridData.splice(index, 1);
     this.formGroups.splice(index, 1);
 
     console.log('formGroups', this.formGroups);
+
+    if (this.editingIndex === index) this.editingIndex = null;
+    else if (this.editingIndex !== null && this.editingIndex > index)
+      this.editingIndex--;
   }
 
   saveRow(index: number) {
-    const formGroup = this.formGroups[index];
-    const gridForm = formGroup.value;
+    console.log('index', index);
 
+    const formGroup = this.formGroups[index];
+    const gridForm = [
+      {
+        ...formGroup.value,
+        totalprice: formGroup.get('totalprice')?.value,
+        index: index,
+      },
+    ];
+
+    console.log('formGroup.value', formGroup.value);
     console.log('gridForm', gridForm);
 
     this.updateTotalPrice(formGroup);
+    this.gridFormData.emit(gridForm);
 
-    console.log('formGroups', this.formGroups);
+    // console.log('formGroups', this.formGroups);
 
-    this.selectedDepartment = formGroup.get('Department')?.value;
-    this.selectedAccount = formGroup.get('Account')?.value;
-    this.getRequestId(this.form, index, gridForm);
+    // this.selectedDepartment = formGroup.get('Department')?.value;
+    // this.selectedAccount = formGroup.get('Account')?.value;
 
     formGroup.disable();
+
+    this.editingIndex = null;
   }
 
   updateTotalPrice(formGroup: FormGroup) {
@@ -165,391 +219,106 @@ export class PogridComponent implements OnInit, OnChanges {
   }
 
   getDeptData() {
-    const paramsdept = {
-      param1: 1088,
-      param3: 'DEPT',
-      param4: 'ALL',
-    };
+    this.entityService
+      .callAPI$('getCodes', this.paramify.paramsdept)
+      .subscribe({
+        next: (data) => {
+          // console.log('Data received:', data);
 
-    this.apiService.getDeptData(paramsdept).subscribe({
-      next: (data) => {
-        console.log('Data received:', data);
-
-        this.departmentData = data.map((item: DepartmentData) => ({
-          description: item.description,
-          codeKey: item.codeKey,
-          orgId: item.orgId,
-          codeId: item.codeId,
-        }));
-
-        this.onlyDepartment = data.map(
-          (item: DepartmentData, index: number) => ({
-            id: index,
-            codeKey: item.codeKey,
+          this.departmentData = data.map((item: DepartmentData) => ({
             description: item.description,
-          })
-        );
+            codeKey: item.codeKey,
+            orgId: item.orgId,
+            codeId: item.codeId,
+          }));
 
-        // console.log('departmentData', this.departmentData);
-        // console.log('onlyDepartment', this.onlyDepartment);
-      },
+          this.onlyDepartment = data.map(
+            (item: DepartmentData, index: number) => ({
+              id: index,
+              codeKey: item.codeKey,
+              description: item.description,
+            })
+          );
 
-      error: (error) => {
-        console.error('Error fetching data:', error);
-      },
+          // console.log('departmentData', this.departmentData);
+          // console.log('onlyDepartment', this.onlyDepartment);
+        },
 
-      complete: () => {
-        console.log('Department Data fetching completed.');
-      },
-    });
+        error: (error) => {
+          console.error('Error fetching data:', error);
+        },
+
+        complete: () => {
+          console.log('Department Data fetching completed.');
+        },
+      });
   }
 
   getAccData(codekey: any) {
-    const paramsacc = {
-      param1: 1088,
-      param2: 2,
-      param3: 'HIG',
-      param4: codekey,
-      param5: 'PO',
-    };
+    this.entityService
+      .callAPI$('getExpItemsByDept', this.paramify.paramsacc(codekey))
+      .subscribe({
+        next: (data) => {
+          // console.log('data', data);
+          this.accountData = data.map((account: any, index: number) => ({
+            id: index,
+            accName: account.accName,
+            accountCode: account.accountCode,
+          }));
 
-    this.apiService.getAccData(paramsacc).subscribe({
-      next: (data) => {
-        console.log('data', data);
-        this.accountData = data.map((account: any, index: number) => ({
-          id: index,
-          accName: account.accName,
-          accountCode: account.accountCode,
-        }));
+          // console.log('accountData', this.accountData);
+        },
 
-        console.log('accountData', this.accountData);
-      },
+        error: (error) => {
+          console.error('Error fetching data:', error);
+        },
 
-      error: (error) => {
-        console.error('Error fetching data:', error);
-      },
-
-      complete: () => {
-        console.log('Account Data fetching completed.');
-      },
-    });
+        complete: () => {
+          console.log('Account Data fetching completed.');
+        },
+      });
   }
 
   getVendorItemData(vendor: any) {
-    console.log('vendor', vendor);
+    // console.log('vendor', vendor);
 
-    const paramsvendoritem = {
-      param1: 1088,
-      param2: vendor?.vendorId, //vendorid
-      param3: 'HIG',
-      param4: 0,
-      param5: 3,
-    };
-    console.log('paramsvendoritem', paramsvendoritem);
+    this.entityService
+      .callAPI$('getVendorItems', this.paramify.paramsvendoritem(vendor))
+      .subscribe({
+        next: (data) => {
+          console.log('data', data);
 
-    this.apiService.getVendorItemData(paramsvendoritem).subscribe({
-      next: (data) => {
-        console.log('data', data);
+          this.vendorPart = data.map((item: any) => ({
+            vendPartDesc: item.vendPartDesc,
+            itemId: item.itemID,
+          }));
 
-        this.vendorPart = data.map((item: any) => ({
-          vendPartDesc: item.vendPartDesc,
-          itemId: item.itemID,
-        }));
+          // console.log('vendorPart', this.vendorPart);
+        },
 
-        console.log('vendorPart', this.vendorPart);
-      },
+        error: (error) => {
+          console.error('Error fetching data:', error);
+        },
 
-      error: (error) => {
-        console.error('Error fetching data:', error);
-      },
-
-      complete: () => {
-        console.log('Vendor Item Data fetching completed.');
-      },
-    });
+        complete: () => {
+          console.log('Vendor Item Data fetching completed.');
+        },
+      });
   }
 
-  getRequestId(form: any, index: number, gridForm: any) {
-    const paramsrequest = {
-      param1: 1088,
-      param2: 'HIG',
-      param3: 'SEQ',
-    };
+  handleSaveInHeader() {
+    let gridData: any[] = [];
+    this.formGroups.forEach((formGroup, index) => {
+      console.log('form value', formGroup.value);
 
-    let reqID: number;
+      // const formGroupValues: any = {};
+      // Object.keys(formGroup.controls).forEach((key) => {
+      //   formGroupValues[key] = formGroup.get(key)?.value;
+      // });
+      // formGroupValues[index] = index;
 
-    this.apiService.getRequestId(paramsrequest).subscribe({
-      next: (data) => {
-        console.log('data', data);
-        reqID = data[0].codeValue1;
-        console.log('reqID', reqID);
-        this.savePO(reqID, form, index, gridForm);
-      },
-
-      error: (error) => {
-        console.error('Error fetching data:', error);
-      },
-
-      complete: () => {
-        console.log('Req ID Data fetching completed.');
-      },
+      gridData.push({ ...formGroup.value, index: index });
     });
-  }
-
-  savePO(reqID: number, form: any, index: number, gridForm: any) {
-    console.log('gridForm?.VendorPart.itemId', gridForm?.VendorPart.itemId);
-
-    const mockform = {
-      emailCC: 'test@gmail.com',
-      expenseType: { id: 1, value: 'Expense Request' },
-      managerEmail: { id: 1, value: 'Manager1@gmail.com' },
-      purpose: 'test',
-      selectVendor: {
-        preferredVendor: 'AMERICAN HOTEL REGISTER COMPANY',
-        vendorId: '6357',
-      },
-      startDate: '2024-06-07',
-    };
-    const mockgridForm = {
-      Account: {
-        id: 0,
-        accName: 'Accounting/Audit Fees',
-        accountCode: '526100000.000',
-      },
-      Department: { id: 0, codeKey: 'A&G', description: 'A&G Department' },
-      Item: 'test',
-      VendorPart: { vendPartDesc: 'Testing Vendor', itemId: 13012 },
-      delDate: '2024-06-07',
-      quantity: '2',
-      totalprice: 6.0,
-      unitprice: 3.0,
-    };
-
-    // const paramsPO = [
-    //   {
-    //     expItem: gridForm?.Account?.accName,
-    //     purpose: form?.purpose,
-    //     reqId: reqID,
-    //     startDate: form?.startDate,
-    //     expLineNo: index,
-    //     preAmount: gridForm?.totalprice,
-    //     masterFlag: 0,
-    //     preferredVendor: form?.preferredVendor,
-    //     accountCode: gridForm?.Accounct?.acccountCode,
-    //     quantity: gridForm?.quantity,
-    //     packageUnit: '',
-    //     unitPrice: gridForm?.unitprice,
-    //     vendPartno: gridForm?.VendorPart.itemId,
-    //     taxCalculated: '0',
-    //     taxPercent: 0,
-    //     deptCode: gridForm?.Department?.codeKey,
-    //     reqDeliveryDate: gridForm?.delDate,
-    //     managerEmail: form?.managerEmail,
-    //     status: 'Saved',
-    //     userId: 7323,
-    //     expDate: '',
-    //     citiesVstd: '',
-    //     amtSpent: 0,
-    //     currency: '',
-    //     comments: '',
-    //     statusId: 3,
-    //     managerId: 7406,
-    //     orgId: 1088,
-    //     payMode: '',
-    //     preApproved: 2,
-    //     actualAmount: 0,
-    //     othercity: '',
-    //     addedOn: '',
-    //     codeValue: '',
-    //     apReview: '',
-    //     exp: '',
-    //     codeId: '',
-    //     stateId: '',
-    //     expType: '',
-    //     jobCode: '',
-    //     phaseCode: '',
-    //     JCatCode: '',
-    //     compCode: 'HIG',
-    //     detailsFlag: 1,
-    //     automileageFlag: 0,
-    //     fromCity: '',
-    //     toCity: '',
-    //     agentName: '',
-    //     itinararyNo: '',
-    //     bookedDate: '',
-    //     fromDate: '',
-    //     toDate: '',
-    //     totTrip: 0,
-    //     LNorm: 0,
-    //     reimbt: 0,
-    //     attCnt: 0,
-    //     otherFromCity: '',
-    //     otherToCity: '',
-    //     companyCar: '',
-    //     outOfCity: false,
-    //     otherPlace: '',
-    //     ourRefNo: '',
-    //     budgetLimit: '',
-    //     budget: 0,
-    //     remaining: 0,
-    //     shippingCost: 0,
-    //     invCnt: 0,
-    //     balAfterPO: 0,
-    //     taxAmount1: 0,
-    //     taxAmount2: 0,
-    //     taxAmount3: 0,
-    //     reimbursable: '',
-    //     vendorEmail: '',
-    //     fiscalMonth: '',
-    //     polineseq: '0',
-    //     qtyReceived: 0,
-    //     // poInvAmount: 0,
-    //     invLineNo: 0,
-    //     poAmount: 0,
-    //     csuserid: 0,
-    //     contactCnt: 0,
-    //     mgrGroupCode: 'GMPLUS',
-    //     vendorFlag: '',
-    //     deptChgCmt: '',
-    //     itemCode: '',
-    //     receiveCnt: 0,
-    //     promoCode: '',
-    //     discount: '0',
-    //     discountFlag: 'N',
-    //     onBeHalfOf: '',
-    //     expItemAccCode: '',
-    //     lastUpdSource: 'mobile',
-    //     qbVendId: 0,
-    //     qbAcctId: 0,
-    //     qbItemId: 0,
-    //     jobId: 0,
-    //     className: '',
-    //     classRefId: '0',
-    //     sendtoqb: '',
-    //     priceFlag: '',
-    //     ccEmail: '',
-    //   },
-    // ];
-
-    const paramsPO = [
-      {
-        expItem: mockgridForm?.Account?.accName,
-        purpose: mockform?.purpose,
-        reqId: reqID,
-        startDate: mockform?.startDate,
-        expLineNo: index,
-        preAmount: mockgridForm?.totalprice,
-        masterFlag: 0,
-        preferredVendor: mockform?.selectVendor?.preferredVendor,
-        accountCode: mockgridForm?.Account?.accountCode,
-        quantity: mockgridForm?.quantity,
-        packageUnit: '',
-        unitPrice: mockgridForm?.unitprice,
-        vendPartno: mockgridForm?.VendorPart.itemId,
-        taxCalculated: '0',
-        taxPercent: '0',
-        deptCode: mockgridForm?.Department?.codeKey,
-        reqDeliveryDate: mockgridForm?.delDate,
-        managerEmail: mockform?.managerEmail,
-        status: 'Saved',
-        userId: 7323,
-        expDate: '',
-        citiesVstd: '',
-        amtSpent: 0,
-        currency: '',
-        comments: '',
-        statusId: 3,
-        managerId: 7406,
-        orgId: 1088,
-        payMode: '',
-        id: reqID.toString(),
-        // preApproved: 2,
-        // actualAmount: 0,
-        // othercity: '',
-        // addedOn: '',
-        // codeValue: '',
-        // apReview: '',
-        // exp: '',
-        // codeId: '',
-        // stateId: '',
-        // expType: '',
-        // jobCode: '',
-        // phaseCode: '',
-        // JCatCode: '',
-        // compCode: 'HIG',
-        // detailsFlag: 1,
-        // automileageFlag: 0,
-        // fromCity: '',
-        // toCity: '',
-        // agentName: '',
-        // itinararyNo: '',
-        // bookedDate: '',
-        // fromDate: '',
-        // toDate: '',
-        // totTrip: 0,
-        // LNorm: 0,
-        // reimbt: 0,
-        // attCnt: 0,
-        // otherFromCity: '',
-        // otherToCity: '',
-        // companyCar: '',
-        // outOfCity: false,
-        // otherPlace: '',
-        // ourRefNo: '',
-        // // budgetLimit: '',
-        // // budget: 0,
-        // // remaining: 0,
-        // shippingCost: 0,
-        // invCnt: 0,
-        // balAfterPO: 0,
-        // taxAmount1: '0',
-        // taxAmount2: '0',
-        // taxAmount3: '0',
-        // reimbursable: '',
-        // // vendorEmail: '',
-        // fiscalMonth: '',
-        // polineseq: '0',
-        // // qtyReceived: 0,
-        // // poInvAmount: 0,
-        // // invLineNo: 0,
-        // // poAmount: 0,
-        // // csuserid: 0,
-        // contactCnt: 0,
-        // mgrGroupCode: 'GMPLUS',
-        // // vendorFlag: '',
-        // deptChgCmt: '',
-        // itemCode: '',
-        // receiveCnt: 0,
-        // promoCode: '',
-        // discount: '0',
-        // discountFlag: 'N',
-        // onBeHalfOf: '',
-        // expItemAccCode: '',
-        // lastUpdSource: 'mobile',
-        // qbVendId: 0,
-        // qbAcctId: 0,
-        // qbItemId: 0,
-        // // jobId: 0,
-        // className: '',
-        // classRefId: '0',
-        // sendtoqb: '',
-        // priceFlag: '',
-        // ccEmail: '',
-      },
-    ];
-
-    this.apiService.savePO(paramsPO).subscribe({
-      next: (data) => {
-        console.log('data', data);
-      },
-
-      error: (error) => {
-        console.error('Error fetching data:', error);
-      },
-
-      complete: () => {
-        console.log('Save PO Data fetching completed.');
-      },
-    });
+    this.gridFormData.emit(gridData);
   }
 }

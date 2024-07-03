@@ -62,6 +62,9 @@ export class MenuComponent {
           {
             label: 'New Expense',
             icon: 'pi pi-fw pi-plus',
+            command: () => {
+              this.router.navigate(['/expense']);
+            },
           },
           {
             label: 'My Expenses',

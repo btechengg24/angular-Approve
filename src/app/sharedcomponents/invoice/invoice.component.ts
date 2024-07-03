@@ -13,13 +13,14 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FileUploadModule } from 'primeng/fileupload';
 
-import { ApiService } from '../../api.service';
-
 import { VendorData, POData } from 'src/app/schema';
 import { InvoicegridComponent } from '@shared/invoicegrid/invoicegrid.component';
 import { InvoicepopupComponent } from '@shared/invoicepopup/invoicepopup.component';
 
 import { formatDate } from '@angular/common';
+
+import { EntityService } from '@api/entity.service';
+import { Paramify } from '@api/paramify';
 
 @Component({
   selector: 'app-invoice',
@@ -56,9 +57,10 @@ export class InvoiceComponent implements OnInit {
   invoiceGridComponent!: InvoicegridComponent;
 
   constructor(
-    private apiService: ApiService,
+    private entityService: EntityService,
     private router: Router,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private paramify: Paramify
   ) {}
 
   ngOnInit() {
@@ -92,25 +94,22 @@ export class InvoiceComponent implements OnInit {
   }
 
   getVendorData() {
-    const paramsvendor = {
-      param1: 1088,
-      param3: 'HIG',
-    };
-
-    this.apiService.getVendorData(paramsvendor).subscribe({
-      next: (data) => {
-        this.vendorData = data.map((item: VendorData) => ({
-          preferredVendor: item.preferredVendor,
-          vendorId: item.vendorId,
-        }));
-      },
-      error: (error) => {
-        console.error('Error fetching data:', error);
-      },
-      complete: () => {
-        console.log('Vendor Data fetching completed.');
-      },
-    });
+    this.entityService
+      .callAPI$('getPreferredVendors', this.paramify.paramsvendor)
+      .subscribe({
+        next: (data) => {
+          this.vendorData = data.map((item: VendorData) => ({
+            preferredVendor: item.preferredVendor,
+            vendorId: item.vendorId,
+          }));
+        },
+        error: (error) => {
+          console.error('Error fetching data:', error);
+        },
+        complete: () => {
+          console.log('Vendor Data fetching completed.');
+        },
+      });
   }
 
   addNewPO() {
@@ -118,60 +117,58 @@ export class InvoiceComponent implements OnInit {
   }
 
   getPOData(vendor: VendorData) {
-    const paramsPO = {
-      param1: 1088,
-      param2: 1,
-      param3: vendor?.preferredVendor,
-      param4: '',
-    };
+    this.entityService
+      .callAPI$(
+        'getMultipleExpDetailsByReqId',
+        this.paramify.paramsgetPO(vendor)
+      )
+      .subscribe({
+        next: (data) => {
+          this.poData = data.map((item: any, index: number) => ({
+            ourRefNo: item.ourRefNo,
+            expLineNo: item.expLineNo,
+            polineseq: item.polineseq,
+            deptCode: item.deptCode,
+            accountCode: item.accountCode,
+            expItem: item.expItem,
+            account: item.accountCode + '-' + item.expItem,
+            vendPartno: item.vendPartno,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            preAmount: item.preAmount,
+            taxAmount1: item.taxAmount1 + item.taxAmount2 + item.taxAmount3,
+            taxCalculated: item.taxCalculated,
+            invQuantity: item.quantity,
+            invUnitPrice: item.unitPrice,
+            invAmount: item.preAmount,
+            invTax: item.taxAmount1,
+            shippingCost: item.shippingCost,
+            invLineNo: index + 1,
+            comments: item.comments,
+            taxPercent: item.taxPercent,
 
-    this.apiService.getPO(paramsPO).subscribe({
-      next: (data) => {
-        this.poData = data.map((item: any, index: number) => ({
-          ourRefNo: item.ourRefNo,
-          expLineNo: item.expLineNo,
-          polineseq: item.polineseq,
-          deptCode: item.deptCode,
-          accountCode: item.accountCode,
-          expItem: item.expItem,
-          account: item.accountCode + '-' + item.expItem,
-          vendPartno: item.vendPartno,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          preAmount: item.preAmount,
-          taxAmount1: item.taxAmount1 + item.taxAmount2 + item.taxAmount3,
-          taxCalculated: item.taxCalculated,
-          invQuantity: item.quantity,
-          invUnitPrice: item.unitPrice,
-          invAmount: item.preAmount,
-          invTax: item.taxAmount1,
-          shippingCost: item.shippingCost,
-          invLineNo: index + 1,
-          comments: item.comments,
-          taxPercent: item.taxPercent,
+            reqId: item.reqId,
+            qtyReceived: item.qtyReceived,
+            cancelFlag: 0,
+            poMasterFlag: item.masterFlag,
+            poDetailsFlag: item.detailsFlag,
+            packageUnit: item.packageUnit,
+            itemCode: item.itemCode,
+            lastUpdatedSource: item.lastUpdSource,
+            poStartDate: item.startDate,
+            poPurpose: item.purpose,
+          }));
 
-          reqId: item.reqId,
-          qtyReceived: item.qtyReceived,
-          cancelFlag: 0,
-          poMasterFlag: item.masterFlag,
-          poDetailsFlag: item.detailsFlag,
-          packageUnit: item.packageUnit,
-          itemCode: item.itemCode,
-          lastUpdatedSource: item.lastUpdSource,
-          poStartDate: item.startDate,
-          poPurpose: item.purpose,
-        }));
-
-        this.filteredPoData = this.poData;
-        // console.log('poData', this.poData);
-      },
-      error: (error) => {
-        console.error('Error fetching data:', error);
-      },
-      complete: () => {
-        console.log('PO Data fetching completed.');
-      },
-    });
+          this.filteredPoData = this.poData;
+          // console.log('poData', this.poData);
+        },
+        error: (error) => {
+          console.error('Error fetching data:', error);
+        },
+        complete: () => {
+          console.log('PO Data fetching completed.');
+        },
+      });
   }
 
   filterPOData(searchTerm: string) {
@@ -287,144 +284,31 @@ export class InvoiceComponent implements OnInit {
     }
   }
 
-  handleActualSave(formData: any[]) {
-    console.log('formData in invoice', formData);
+  handleActualSave(gridForm: any[]) {
+    console.log('gridForm in invoice', gridForm);
 
     const form = this.formGroup.value;
     console.log('form in invoice', form);
 
-    // const mockform = {
-    //   VendorPart: '',
-    //   dueDate: '2024-07-21',
-    //   invoice: 'test-l',
-    //   invoiceAmount: 386.1,
-    //   invoiceDate: '2024-06-21',
-    //   selectVendor: {
-    //     preferredVendor: 'AMERICAN SOCIETY OF ASSOCIATION EXECUTIVES',
-    //     vendorId: '6358',
-    //   },
-    // };
-    // const mockformData = [
-    //   {
-    //     account: '106244000.000-Condo Rental Expense',
-    //     accountCode: '106244000.000',
-    //     cancelFlag: 0,
-    //     checkBox: true,
-    //     comments: 'testing',
-    //     deptCode: 'ROOMS',
-    //     expItem: 'Condo Rental Expense',
-    //     expLineNo: 2,
-    //     finalInvoice: false,
-    //     invAmount: 386.1,
-    //     invLineNo: 1,
-    //     invQuantity: 8,
-    //     invTax: 26.1,
-    //     invUnitPrice: 45,
-    //     itemCode: '',
-    //     lastUpdatedSource: '',
-    //     ourRefNo: '11091019',
-    //     packageUnit: 'EA',
-    //     poDetailsFlag: 0,
-    //     poMasterFlag: 0,
-    //     poPurpose: 'testing to check PO amount recalculation',
-    //     poStartDate: '',
-    //     polineseq: 0,
-    //     preAmount: 386.1,
-    //     qtyReceived: 0,
-    //     quantity: 8,
-    //     reqId: 1109,
-    //     shippingCost: 0,
-    //     taxAmount1: 26.1,
-    //     taxCalculated: 1,
-    //     taxPercent: 7.25,
-    //     unitPrice: 45,
-    //     vendPartno: 'TESTVENDPART',
-    //   },
-    // ];
+    const data = {
+      form: form,
+      gridForm: gridForm,
+    };
 
-    let paramsSaveInvoice: any[] = [];
-
-    formData.forEach((item) => {
-      paramsSaveInvoice.push({
-        orgId: 0,
-        compCode: 'HIG',
-        ourRefNo: item.ourRefNo,
-        requestId: item.reqId,
-
-        invNo: form.invoice,
-
-        invLineNo: item.invLineNo,
-
-        invDate: formatDate(form.invoiceDate, 'MM/dd/yyyy', 'en-US'),
-
-        amtPaid: 0,
-        addedBy: 0,
-        modifiedBy: 0,
-
-        expLineNo: item.expLineNo,
-
-        preferredVendor: form.selectVendor.preferredVendor,
-        totalInvAmt: form.invoiceAmount,
-        dueDate: formatDate(form.dueDate, 'MM/dd/yyyy', 'en-US'),
-
-        polineseq: item.polineseq,
-        poAmount: +item.preAmount,
-        poInvAmount: +item.invAmount,
-        type: 1,
-        masterFlag: +item.expLineNo === 1 ? 1 : 0,
-        detailsFlag: 1,
-        quantity: item.quantity,
-        qtyReceived: item.qtyReceived,
-        accountCode: item.accountCode,
-
-        // description: item, // doubt
-        invPath: '',
-        invName: '',
-        // invoiceId: ,
-
-        cancelFlag: item.finalInvoice === true ? '1' : '0',
-        postdate: '',
-        batchcnt: 0,
-        shippingCost: item.shippingCost,
-        taxAmount1: item.taxAmount1,
-        unitPrice: item.unitPrice,
-        comments: item.comments,
-        deptCode: item.deptCode,
-
-        poMasterFlag: item.poMasterFlag,
-        poDetailsFlag: item.poDetailsFlag,
-
-        packageUnit: item.packageUnit,
-        poStartDate: item.poStartDate,
-        poPurpose: item.poPurpose,
-        taxPercent: item.taxPercent,
-        taxCalculated: item.taxCalculated,
-        vendPartNo: item.vendPartno,
-        itemCode: item.itemCode,
-        lastUpdatedSource: item.lastUpdatedSource,
+    this.entityService
+      .callAPI$('addPOInvoiceDetailsMul', this.paramify.paramssaveInvoice(data))
+      .subscribe({
+        next: (data) => {
+          console.log('data', data);
+        },
+        error: (error) => {
+          console.error('Error fetching data:', error);
+        },
+        complete: () => {
+          console.log('Saving Invoice completed.');
+          this.refreshInvoiceGrid();
+        },
       });
-    });
-
-    console.log('paramsSaveInvoice', paramsSaveInvoice);
-
-    // let string = JSON.stringify(paramsSaveInvoice);
-    // console.log(typeof string, string);
-
-    // let object = JSON.parse(string);
-    // console.log(typeof object, object);
-
-    // this.apiService.saveInvoice(paramsSaveInvoice).subscribe({
-    //   next: (data) => {
-    //     console.log('data', data);
-    //   },
-    //   error: (error) => {
-    //     console.error('Error fetching data:', error);
-    //   },
-    //   complete: () => {
-    //     console.log('Saving Invoice completed.');
-    //     this.refreshInvoiceGrid();
-    //   },
-    // });
   }
 
   refreshInvoiceGrid() {

@@ -11,7 +11,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { tap } from 'rxjs';
-import { EntityService } from '@api/entity.service';
+import { EntityService } from 'src/api/entity.service';
 import { User } from '@shared/interfaces/index';
 import { MenuComponent } from '@shared/menu/menu.component';
 import { webMethod } from '@util/webmethods';

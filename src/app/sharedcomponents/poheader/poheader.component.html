@@ -80,6 +80,7 @@
           />
         </div>
       </div>
+      <button pButton pRipple label="Save" (click)="onSave()"></button>
     </p-card>
   </form>
   <div class="button-wrapper">
@@ -95,6 +96,7 @@
     ></button>
   </div>
   <div style="width: 100%">
-    <app-pogrid [form]="this.formGroup.value" [gridRow]="gridRow"></app-pogrid>
+    <app-pogrid [form]="this.formGroup.value" [gridRow]="gridRow"
+    (gridFormData)="handleGridData($event)"></app-pogrid>
   </div>
 </div>

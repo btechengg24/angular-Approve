@@ -17,7 +17,8 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 
-import { ApiService } from '../../api.service';
+import { EntityService } from '@api/entity.service';
+import { Paramify } from '@api/paramify';
 
 import { POData, DepartmentData } from 'src/app/schema';
 
@@ -86,7 +87,10 @@ export class InvoicegridComponent implements OnInit, OnChanges {
     { field: 'finalInvoice', header: 'Final Invoice?' },
   ];
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private entityService: EntityService,
+    private paramify: Paramify
+  ) {}
 
   ngOnInit() {
     this.initializeFormGroups();
@@ -162,35 +166,31 @@ export class InvoicegridComponent implements OnInit, OnChanges {
   }
 
   getDeptData() {
-    const paramsdept = {
-      param1: 1088,
-      param3: 'DEPT',
-      param4: 'ALL',
-    };
+    this.entityService
+      .callAPI$('getCodes', this.paramify.paramsdept)
+      .subscribe({
+        next: (data) => {
+          // console.log('Data received:', data);
 
-    this.apiService.getDeptData(paramsdept).subscribe({
-      next: (data) => {
-        // console.log('Data received:', data);
+          this.onlyDepartment = data.map(
+            (item: DepartmentData, index: number) => ({
+              id: index,
+              codeKey: item.codeKey,
+              description: item.description,
+            })
+          );
 
-        this.onlyDepartment = data.map(
-          (item: DepartmentData, index: number) => ({
-            id: index,
-            codeKey: item.codeKey,
-            description: item.description,
-          })
-        );
+          // console.log('onlyDepartment', this.onlyDepartment);
+        },
 
-        // console.log('onlyDepartment', this.onlyDepartment);
-      },
+        error: (error) => {
+          console.error('Error fetching data:', error);
+        },
 
-      error: (error) => {
-        console.error('Error fetching data:', error);
-      },
-
-      complete: () => {
-        console.log('Department Data fetching completed.');
-      },
-    });
+        complete: () => {
+          console.log('Department Data fetching completed.');
+        },
+      });
   }
 
   calculateTotalInvAmount(): number {
@@ -343,26 +343,30 @@ export class InvoicegridComponent implements OnInit, OnChanges {
 
     if (this.mini) {
       this.formGroups.forEach((formGroup, index) => {
-        const formGroupValues: any = {};
-        Object.keys(formGroup.controls).forEach((key) => {
-          formGroupValues[key] = formGroup.get(key)?.value;
-        });
+        console.log('form value', formGroup.value);
+
+        // const formGroupValues: any = {};
+        // Object.keys(formGroup.controls).forEach((key) => {
+        //   formGroupValues[key] = formGroup.get(key)?.value;
+        // });
 
         const originalPOData = this.poData[index];
 
-        formData.push({ ...originalPOData, ...formGroupValues });
+        formData.push({ ...originalPOData, ...formGroup.value });
       });
     } else {
       this.formGroups.forEach((formGroup, index) => {
+        console.log('form value', formGroup.value);
+
         if (formGroup.value.checkBox === true) {
-          const formGroupValues: any = {};
-          Object.keys(formGroup.controls).forEach((key) => {
-            formGroupValues[key] = formGroup.get(key)?.value;
-          });
+          // const formGroupValues: any = {};
+          // Object.keys(formGroup.controls).forEach((key) => {
+          //   formGroupValues[key] = formGroup.get(key)?.value;
+          // });
 
           const originalPOData = this.poData[index];
 
-          formData.push({ ...originalPOData, ...formGroupValues });
+          formData.push({ ...originalPOData, ...formGroup.value });
         }
       });
     }

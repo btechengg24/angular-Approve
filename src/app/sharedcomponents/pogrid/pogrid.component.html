@@ -59,8 +59,9 @@
                     editable="true"
                     [showClear]="true"
                     formControlName="{{ col.field }}"
+                    (onClick)="handleDepartmentChange(rowIndex, $event)"
                   ></p-dropdown>
-                  <p-dropdown
+                  <!-- <p-dropdown
                     *ngIf="col.field === 'Account'"
                     [options]="accountData"
                     optionLabel="accName"
@@ -69,7 +70,32 @@
                     editable="true"
                     [showClear]="true"
                     formControlName="{{ col.field }}"
-                  ></p-dropdown>
+                    (onClick)="handleAccountChange(rowIndex,$event)"
+                    s
+                  ></p-dropdown> -->
+                  <ng-container *ngIf="col.field === 'Account'">
+                    <ng-container
+                      *ngIf="editingIndex === rowIndex; else displayAccount"
+                    >
+                      <p-dropdown
+                        [options]="accountData"
+                        optionLabel="accName"
+                        autoWidth="false"
+                        [style]="{ width: '200px' }"
+                        editable="true"
+                        [showClear]="true"
+                        formControlName="{{ col.field }}"
+                        (onChange)="handleAccountChange(rowIndex, $event)"
+                      ></p-dropdown>
+                    </ng-container>
+                    <ng-template #displayAccount>
+                      <div formControlName="{{ col.field }}">
+                        {{
+                          formGroups[rowIndex].get("Account")?.value?.accName
+                        }}
+                      </div>
+                    </ng-template>
+                  </ng-container>
                   <p-dropdown
                     *ngIf="col.field === 'VendorPart'"
                     [options]="vendorPart"
