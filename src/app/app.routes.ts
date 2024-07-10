@@ -24,11 +24,8 @@ export const routes: Routes = [
     component: Components.InvoiceComponent,
   },
   {
-    path: 'mgrappr',
-    component: Components.MgrapprovalComponent,
-  },
-  {
     path: 'expense',
-    component: Components.InvoicetotextComponent,
+    // component: Components.InvoicetotextComponent,
+    component: Components.CropComponent,
   },
 ];

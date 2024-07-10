@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { FileUploadModule } from 'primeng/fileupload';
+import { MenuComponent } from '@shared/menu/menu.component';
+
 // const { createWorker } = require('../../../app/tesseract.esm.min.js');
 
 // import { createWorker } from 'tesseract.js';
 
 @Component({
   selector: 'app-invoicetotext',
-  imports: [FileUploadModule],
+  imports: [FileUploadModule, MenuComponent],
   standalone: true,
   templateUrl: './invoicetotext.component.html',
   styleUrls: ['./invoicetotext.component.css'],

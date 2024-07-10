@@ -10,11 +10,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProgressBarModule } from 'primeng/progressbar';
-import { tap } from 'rxjs';
 import { EntityService } from 'src/api/entity.service';
-import { User } from '@shared/interfaces/index';
 import { MenuComponent } from '@shared/menu/menu.component';
-import { webMethod } from '@util/webmethods';
 
 @Component({
   selector: 'app-auth',
@@ -29,7 +26,7 @@ import { webMethod } from '@util/webmethods';
   ],
   providers: [EntityService],
   templateUrl: './auth.component.html',
-  styleUrl: './auth.component.css',
+  styleUrls: ['./auth.component.css'],
 })
 export class AuthComponent {
   public loginForm: FormGroup;
@@ -37,8 +34,7 @@ export class AuthComponent {
 
   constructor(
     private route: ActivatedRoute,
-    // private entity: EntityService,
-    public formBuilder: FormBuilder,
+    private formBuilder: FormBuilder,
     private router: Router
   ) {
     this.loginForm = this.formBuilder.group({
@@ -50,20 +46,11 @@ export class AuthComponent {
   ngOnInit() {}
 
   submit() {
-    this.showProgress = true;
-    // this.entity.callAPI$("POST", webMethod.getUserInfo, this.formGroup?.controls['user'])
-    //   .pipe(
-    //     tap(_ => {
-    //       console.log('data: ', _);
-    //       this.showProgress = false;
-    //     }),
-    //   );
-    // this.entity
-    //   .callAPI$(webMethod.getUserInfo, this.loginForm?.value.user)
-    //   .subscribe((_useInfo) => {
-    //     localStorage.setItem('currentUser', _useInfo);
-    //     this.showProgress = false;
-    //     this.router.navigateByUrl('newpo', { replaceUrl: true });
-    //   });
+    if (this.loginForm.valid) {
+      this.showProgress = true;
+      this.router.navigate(['/po']);
+    } else {
+      this.loginForm.markAllAsTouched();
+    }
   }
 }

@@ -16,6 +16,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { VendorData, POData } from 'src/app/schema';
 import { InvoicegridComponent } from '@shared/invoicegrid/invoicegrid.component';
 import { InvoicepopupComponent } from '@shared/invoicepopup/invoicepopup.component';
+import { MenuComponent } from '@shared/menu/menu.component';
 
 import { formatDate } from '@angular/common';
 
@@ -38,6 +39,7 @@ import { Paramify } from '@api/paramify';
     InvoicegridComponent,
     FileUploadModule,
     InvoicepopupComponent,
+    MenuComponent
   ],
   providers: [DialogService],
   templateUrl: './invoice.component.html',

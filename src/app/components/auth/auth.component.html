@@ -1,18 +1,18 @@
 <div *ngIf="showProgress">
 	<p-progressBar mode="indeterminate" [style]="{ height: '6px' }"></p-progressBar>
 </div>
-<app-menu></app-menu>
 <main>
 	<h1>Login</h1>
 	<form [formGroup]="loginForm" style="margin:10px;z-index: 1000;">
 		<p>
-			<input pInputText type="text" formControlName="user" placeholder="Username" />
+			<input pInputText type="text" formControlName="user" placeholder="Username" required />
 		</p>
 		<p>
-			<input pInputText type="password" formControlName="pwd" placeholder="Password" />
+			<input pInputText type="password" formControlName="pwd" placeholder="Password" required/>
 		</p>
 		<p>
 			<p-button label="Submit" (click)="submit()"></p-button>
 		</p>
 	</form>
 </main>
+
