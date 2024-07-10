@@ -1,0 +1,15 @@
+<div>
+  <p-button class="save-button" (click)="handleSave()" label="Save"></p-button>
+  <div
+    *ngFor="let program of programInformation; let programIndex = index"
+    class="field-checkbox"
+  >
+    <form [formGroup]="formGroup">
+      <p-checkbox
+        [label]="program.Name"
+        [binary]="true"
+        [formControlName]="program.Name"
+      />
+    </form>
+  </div>
+</div>

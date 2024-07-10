@@ -1,0 +1,36 @@
+<div class="card wrapper">
+  <button
+    pButton
+    pRipple
+    label="Add Child"
+    icon="pi pi-plus"
+    (click)="onClickNewChild()"
+  ></button>
+  <div *ngIf="childData.length > 0">
+    <div *ngFor="let child of childData; let childIndex = index">
+      <form [formGroup]="formGroups[childIndex]">
+        <div class="card">
+          <h4>{{ child.name }} {{ child.fee }}</h4>
+
+          <!-- <div
+            *ngFor="let program of programInformation; let programIndex = index"
+            class="field-checkbox"
+          >
+            <p-checkbox
+              [label]="program.Name"
+              [name]="childData[childIndex].name"
+              [value]="program"
+              (onChange)="handleFeeChanges($event, childIndex, programIndex)"
+            />
+          </div> -->
+        </div>
+      </form>
+    </div>
+
+    <div>Total Fee: {{ totalFee }}</div>
+  </div>
+</div>
+
+<div *ngIf="childData.length === 0">
+  <p>No children added yet.</p>
+</div>
