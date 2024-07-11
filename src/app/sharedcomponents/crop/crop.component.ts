@@ -9,6 +9,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 import { CroppopupComponent } from '@shared/croppopup/croppopup.component';
+import { MenuComponent } from '@shared/menu/menu.component';
 
 @Component({
   selector: 'app-crop',
@@ -19,6 +20,7 @@ import { CroppopupComponent } from '@shared/croppopup/croppopup.component';
     ButtonModule,
     CheckboxModule,
     ReactiveFormsModule,
+    MenuComponent
   ],
   providers: [DialogService],
   templateUrl: './crop.component.html',
@@ -79,7 +81,7 @@ export class CropComponent implements OnInit {
     };
 
     this.dialogRef = this.dialogService.open(CroppopupComponent, {
-      header: 'Popup',
+      header: 'Programs',
       width: '70%',
       height: '100%',
       data: {
@@ -89,14 +91,68 @@ export class CropComponent implements OnInit {
 
     this.dialogRef.onClose.subscribe((returnedData) => {
       if (returnedData) {
-        console.log('Returned Data from popup:', returnedData);
-        newChild.program = returnedData;
+        const formattedData = Object.values(returnedData);
+        console.log(typeof formattedData);
+
+        // console.log('Returned Data from popup:', returnedData);
+        newChild.program = formattedData as [];
+
+        // const formattedData: any = [];
+        // this.programInformation.forEach((program, index) => {
+        //   if (returnedData[program.Name] === true) {
+        //     formattedData.push(index);
+        //   }
+        // });
+
+        this.childData.push(newChild);
+        this.formGroupMapper(newChild);
+
+        console.log('formattedData from popup:', formattedData);
         console.log('childData', this.childData);
+
         this.calculateEachChildFee();
       }
     });
-    this.childData.push(newChild);
-    this.formGroupMapper(newChild);
+  }
+  editChild(childIndex: number) {
+    console.log('childIndex', childIndex);
+
+    console.log('childData[childIndex]', this.childData[childIndex]);
+
+    this.dialogRef = this.dialogService.open(CroppopupComponent, {
+      header: 'Programs',
+      width: '70%',
+      height: '100%',
+      data: {
+        programInformation: this.programInformation,
+        childProgramData: this.childData[childIndex].program,
+      },
+    });
+    this.dialogRef.onClose.subscribe((returnedData) => {
+      if (returnedData) {
+        const formattedData = Object.values(returnedData);
+
+        console.log('Returned Data from popup:', returnedData);
+        console.log('formattedData from popup:', formattedData);
+
+        this.childData[childIndex].program = formattedData;
+        // newChild.program = formattedData as [];
+
+        // // const formattedData: any = [];
+        // // this.programInformation.forEach((program, index) => {
+        // //   if (returnedData[program.Name] === true) {
+        // //     formattedData.push(index);
+        // //   }
+        // // });
+
+        // this.childData.push(newChild);
+        // this.formGroupMapper(newChild);
+
+        console.log('childData', this.childData);
+
+        this.calculateEachChildFee();
+      }
+    });
   }
 
   formGroupMapper(childData: any) {
@@ -108,45 +164,45 @@ export class CropComponent implements OnInit {
     this.formGroups.push(formGroup);
   }
 
-  handleFeeChanges(event: any, childIndex: number, programIndex: number) {
-    console.log('event', event);
-    console.log('childIndex', childIndex);
-    console.log('programIndex', programIndex);
+  // handleFeeChanges(event: any, childIndex: number, programIndex: number) {
+  //   console.log('event', event);
+  //   console.log('childIndex', childIndex);
+  //   console.log('programIndex', programIndex);
 
-    const checked = event.checked;
-    console.log('checked', checked.length);
+  //   const checked = event.checked;
+  //   console.log('checked', checked.length);
 
-    if (checked.length === 1) {
-      this.childInEachProgram[programIndex].NumberOfChildren++;
-      this.childInEachProgram[programIndex].Children.push(childIndex);
-      this.childData[childIndex].program.push(programIndex);
-    } else {
-      const childIndexInProgram =
-        this.childInEachProgram[programIndex].Children.indexOf(childIndex);
-      console.log('childIndexInProgram', childIndexInProgram);
+  //   if (checked.length === 1) {
+  //     this.childInEachProgram[programIndex].NumberOfChildren++;
+  //     this.childInEachProgram[programIndex].Children.push(childIndex);
+  //     this.childData[childIndex].program.push(programIndex);
+  //   } else {
+  //     const childIndexInProgram =
+  //       this.childInEachProgram[programIndex].Children.indexOf(childIndex);
+  //     console.log('childIndexInProgram', childIndexInProgram);
 
-      const programIndexInChild =
-        this.childData[childIndex].program.indexOf(programIndex);
-      console.log('programIndexInChild', programIndexInChild);
+  //     const programIndexInChild =
+  //       this.childData[childIndex].program.indexOf(programIndex);
+  //     console.log('programIndexInChild', programIndexInChild);
 
-      if (childIndexInProgram !== -1) {
-        this.childInEachProgram[programIndex].NumberOfChildren--;
-        this.childInEachProgram[programIndex].Children.splice(
-          childIndexInProgram,
-          1
-        );
-      }
+  //     if (childIndexInProgram !== -1) {
+  //       this.childInEachProgram[programIndex].NumberOfChildren--;
+  //       this.childInEachProgram[programIndex].Children.splice(
+  //         childIndexInProgram,
+  //         1
+  //       );
+  //     }
 
-      if (programIndexInChild !== -1) {
-        this.childData[childIndex].program.splice(programIndexInChild, 1);
-      }
-    }
+  //     if (programIndexInChild !== -1) {
+  //       this.childData[childIndex].program.splice(programIndexInChild, 1);
+  //     }
+  //   }
 
-    this.calculateEachChildFee();
+  //   this.calculateEachChildFee();
 
-    console.log('childInEachProgram', this.childInEachProgram);
-    console.log('childData', this.childData);
-  }
+  //   console.log('childInEachProgram', this.childInEachProgram);
+  //   console.log('childData', this.childData);
+  // }
 
   calculateEachChildFee() {
     console.log('in calculateEachChildFee');
@@ -157,16 +213,18 @@ export class CropComponent implements OnInit {
 
     this.childData.forEach((child, index) => {
       child.fee = 0;
-      console.log('child', child);
+      // console.log('child', child);
 
-      child.program.forEach((program: any) => {
-        if (this.childInEachProgram[program].ElderChild === -1) {
-          console.log('no elder child');
-          this.childInEachProgram[program].ElderChild = index;
-          child.fee += this.childInEachProgram[program].ElderChildFee;
-        } else {
-          console.log('elder child');
-          child.fee += this.childInEachProgram[program].YoungerChildFee;
+      child.program.forEach((programValue: any, programIndex: number) => {
+        if (programValue === true) {
+          if (this.childInEachProgram[programIndex].ElderChild === -1) {
+            console.log('no elder child');
+            this.childInEachProgram[programIndex].ElderChild = index;
+            child.fee += this.childInEachProgram[programIndex].ElderChildFee;
+          } else {
+            console.log('elder child');
+            child.fee += this.childInEachProgram[programIndex].YoungerChildFee;
+          }
         }
       });
 

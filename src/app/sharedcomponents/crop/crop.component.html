@@ -1,3 +1,4 @@
+<app-menu></app-menu>
 <div class="card wrapper">
   <button
     pButton
@@ -11,18 +12,13 @@
       <form [formGroup]="formGroups[childIndex]">
         <div class="card">
           <h4>{{ child.name }} {{ child.fee }}</h4>
-
-          <!-- <div
-            *ngFor="let program of programInformation; let programIndex = index"
-            class="field-checkbox"
-          >
-            <p-checkbox
-              [label]="program.Name"
-              [name]="childData[childIndex].name"
-              [value]="program"
-              (onChange)="handleFeeChanges($event, childIndex, programIndex)"
-            />
-          </div> -->
+          <button
+            pButton
+            pRipple
+            label="Edit Programs"
+            icon="pi pi-pencil"
+            (click)="editChild(childIndex)"
+          ></button>
         </div>
       </form>
     </div>

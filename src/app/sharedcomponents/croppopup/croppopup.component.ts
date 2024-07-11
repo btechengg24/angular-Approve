@@ -15,6 +15,7 @@ import { ButtonModule } from 'primeng/button';
 })
 export class CroppopupComponent implements OnInit {
   programInformation: any[] = [];
+  childProgramData: any[] = [];
 
   formGroup!: FormGroup;
 
@@ -25,31 +26,32 @@ export class CroppopupComponent implements OnInit {
 
   ngOnInit() {
     this.programInformation = this.config.data.programInformation;
+    this.childProgramData = this.config.data.childProgramData;
     console.log('programInformation', this.programInformation);
+    console.log('childProgramData', this.childProgramData);
 
     this.formGroupMapper();
   }
 
   formGroupMapper() {
-    // const group: any = {};
-
-    // this.programInformation.forEach((program,index) => {
-    //   console.log(program);
-    //   group[index] = new FormControl(false);
-    // });
-
-    // this.formGroup = new FormGroup(group);
-
-    // console.log('group', group);
-    // console.log('formGroup', this.formGroup.value);
-
     const formControls: { [key: string]: FormControl } = {};
 
-    this.programInformation.forEach((program) => {
-      formControls[program.Name] = new FormControl(false);
-    });
+    if (this.childProgramData === undefined) {
+      this.programInformation.forEach((program) => {
+        formControls[program.Name] = new FormControl(false);
+      });
 
-    this.formGroup = new FormGroup(formControls);
+      this.formGroup = new FormGroup(formControls);
+    } else {
+      this.programInformation.forEach((program, index) => {
+        formControls[program.Name] = new FormControl(
+          this.childProgramData[index]
+        );
+      });
+
+      this.formGroup = new FormGroup(formControls);
+    }
+
     console.log('formControls', formControls);
     console.log('formGroup', this.formGroup);
   }
@@ -58,13 +60,6 @@ export class CroppopupComponent implements OnInit {
     const formData = this.formGroup.value;
     console.log('formData', formData);
 
-    const formattedData: any = [];
-    this.programInformation.forEach((program, index) => {
-      if (formData[program.Name] === true) {
-        formattedData.push(index);
-      }
-    });
-
-    this.dialogRef.close(formattedData);
+    this.dialogRef.close(formData);
   }
 }
